@@ -4,7 +4,7 @@ Hubitat driver to connect to rasbery pi and talk
  (c) 2021 by tmastersmart winnfreenet.com all rights reserved
   permission to use on hubiat for free
  
-
+v1.1  Language
 v1.0  09/08/2021 
 
 
@@ -22,13 +22,20 @@ metadata {
     definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
         capability "Speech Synthesis"
+        capability "AudioNotification"
+        capability "MusicPlayer"
+        capability "SpeechSynthesis"
+       
  }
 
                 
     preferences {
         input("url", "text", title: "URL OF PI:", description: "http://0.0.0.0/talk.php")
-        input("code", "text", title: "Code to identify hub", description: "the hubs name")
- }              
+        input("code", "text", title: "Hubs name", description: "to identify the hub in the pi log")
+        input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
+        input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
+
+    }              
 }
 
 
@@ -52,6 +59,8 @@ def deviceNotification(message) {
         query: [
             "talk": "${message}",
             "code": "${code}",
+            "voice": "${voice}",
+            "lang": "${lang}",
         ]
     ]
 
