@@ -23,12 +23,12 @@ espeak "this is a test of pi talk"
 once this is working
 
 
-place talk.php in your webserver directory. 
+place .php scripts in your webserver directory. 
 /var/www/html/
 
 If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server. 
 
-place talk.sh uin your home directory
+place talk.sh in your home directory
 /home/pi/
 
 http://0.0.0.0/talk.php?talk=test should now create a .wav file and if you run
@@ -37,22 +37,24 @@ bash talk.sh   it should speak those works out the speaker.
 Once this is all working import the driver in hubitat.
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
-save it and go to devises and add a virtual device using this driver.
-Go to the driver and enter the url to your pi and the name of your server 
+save it and add a virtual device using this driver.
+Go to the driver and enter the url to your pi the name of your server and the voice you want to use
+on the pi type 'espeak --voices' to get a list
 
-After this is does send a message using the option in the driver then run
+send a message using the option in the driver then run
 bash talk.sh  and it should speak
 
-You then need to creat a command to run at startup 
-run with 'watch -n 10 /home/pi/talk.sh'      
-The 10 is run every 10 seconds adjust as needed. 
 
-You need to add a log rotation for /home/pi/talk.log
+Create a chron to run every min and load bash talk.sh
+
+or open a terminal and type 'watch -n 10 /home/pi/talk.sh'
+
+
+
+You also need to add a log rotation for /home/pi/talk.log
 
 Webmin is recomended with it you can set up log rotation and start up options using a web interface. 
 https://www.webmin.com/deb.html
-
-
 
 You may modify espeak command the docs are here
 http://espeak.sourceforge.net/commands.html
