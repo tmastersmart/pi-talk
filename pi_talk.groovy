@@ -5,10 +5,13 @@ Hubitat driver to connect to rasbery pi and talk
   permission to use on hubiat for free
  
 
+v1.0  09/08/2021 
+
+
 you need to get talk.php and talk.sh to run on your pi see this url
 https://github.com/tmastersmart/pi-talk/tree/main
 
-
+https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
 *   
 * 
@@ -16,7 +19,7 @@ https://github.com/tmastersmart/pi-talk/tree/main
 */
 import java.text.SimpleDateFormat
 metadata {
-    definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster"){
+    definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
         capability "Speech Synthesis"
  }
