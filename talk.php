@@ -1,6 +1,9 @@
 <?php
 //  ------------------------------------------
-//  (c) 2021 by winnfreenet.com all rights recerved 
+//  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
+//  Permission granted to install and use wuith hubitat for free   
+//
+//   
 //  notice to talk on PI
 //  v1.0
 //  This converts the notice to a wav file 
