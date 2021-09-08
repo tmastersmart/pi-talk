@@ -5,7 +5,8 @@
 //
 //   
 //  notice to talk on PI
-//  v1.0
+//  v1.1 9/08/2021
+//  
 //  This converts the notice to a wav file 
 //
 //  
@@ -23,10 +24,13 @@ for ($i=0; $i < sizeof($fieldNames); $i++) {
 if ($fieldNames[$i] == 'talk')    {$talk= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'device')  {$device= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'code')    {$code= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'voice')   {$voice= $fieldValues[$i];} 
+if ($fieldNames[$i] == 'lang')    {$lang= $fieldValues[$i]; }                                   
 if ($fieldNames[$i] == 'flag')    {$flag= $fieldValues[$i]; }
 }
-
-if (!$talk){$talk="error (no post or get)";}
+if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
+if (!$voice){$voice="+f1";}
+if (!$talk) {$talk ="error (no post or get)";}
 
 $log="/home/pi/talk.log";           
 $file="/home/pi/talk.wav"; if(file_exists($file)) { unlink ($file);}
@@ -37,7 +41,7 @@ if ($flag){
    $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "Set\n ");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
    }          
 
-$send="espeak -w $file $talk";
+$send="espeak $lang$voice -w $file '$talk'";
 //session_write_close();
 exec($send, $output, $return_var ); 
 //session_start();
