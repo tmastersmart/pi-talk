@@ -6,10 +6,7 @@ Licensed for use on hubitat
 
 I created this set of scripts because I could not find one online that would allow
 me to make my PI thats outside on a PA speaker speak from commands sent by hubitat.
-
-Wnn I searched they said it could not be done without a cloud.
-This allows your pi to speak offline. The voics settungs are default and I would like to
-see any settings you make. 
+This allows your pi to speak offline. 
 =========================================================================================
 
 
