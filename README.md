@@ -3,7 +3,7 @@ Hubitat to PI talking
 ----------------------------------------------------------------------------------------
 (c) 2021 by tmastersmart winnfreenet.com
 Licensed for use on hubitat
-http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
+
 
 I created this set of scripts because I could not find one online that would allow
 me to make my PI thats outside on a PA speaker speak from commands sent by hubitat.
