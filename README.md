@@ -65,3 +65,10 @@ if you use this please post a comment here
 http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
 
 
+Notes: v1 using talk.sh plays the wav file using oxplayer install using
+sudo apt-get install omxplaye
+
+v2 using talk2.sh plays the message using espeak from the text file.
+use the version that works best for you....
+
+
