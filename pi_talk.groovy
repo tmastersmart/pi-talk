@@ -5,7 +5,7 @@ Hubitat driver to connect to rasbery pi and talk
   permission to use on hubiat for free
 
 
-v1.2  09/09/2021  Remove music
+v1.2  09/09/2021  Remove music/added status
 v1.1  09/08/2021
 v1.0  09/08/2021 
 
@@ -23,7 +23,7 @@ import java.text.SimpleDateFormat
 metadata {
     definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
-        capability "Speech Synthesis"
+       capability "Speech Synthesis"
 //        capability "AudioNotification"
 //        capability "MusicPlayer"
         capability "SpeechSynthesis"
@@ -67,10 +67,17 @@ def deviceNotification(message) {
     ]
 
    log.info "${device} :Sending Message: ${url}?talk=${message}"    
-
+   sendEvent(name: "received", value: "${message}")
     httpPost(params){response ->
-            if(response.status != 200) {log.error "${device} :Error ${response.status}. " }
-            else {log.info "${device} :Received ok"}
+            if(response.status != 200) {
+                log.error "${device} :Error ${response.status}" 
+                sendEvent(name: "status", value: "Error ${response.status}")
+            }
+            else {
+                log.info "${device} :Received ok"
+                sendEvent(name: "status", value: "ok")
+            }
+        
     }
 }
 
