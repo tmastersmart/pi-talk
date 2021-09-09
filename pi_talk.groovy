@@ -3,8 +3,10 @@ Hubitat driver to connect to rasbery pi and talk
 
  (c) 2021 by tmastersmart winnfreenet.com all rights reserved
   permission to use on hubiat for free
- 
-v1.1  Language
+
+
+v1.2  09/09/2021  Remove music
+v1.1  09/08/2021
 v1.0  09/08/2021 
 
 
@@ -22,8 +24,8 @@ metadata {
     definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
         capability "Speech Synthesis"
-        capability "AudioNotification"
-        capability "MusicPlayer"
+//        capability "AudioNotification"
+//        capability "MusicPlayer"
         capability "SpeechSynthesis"
        
  }
