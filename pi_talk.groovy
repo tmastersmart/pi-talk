@@ -13,6 +13,9 @@ v1.0  09/08/2021
 you need to get talk.php and talk.sh to run on your pi see this url
 https://github.com/tmastersmart/pi-talk/tree/main
 
+comments here
+http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
+
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
 *   
