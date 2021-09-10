@@ -4,6 +4,8 @@ Hubitat driver to connect to rasbery pi and talk
  (c) 2021 by tmastersmart winnfreenet.com all rights reserved
   permission to use on hubiat for free
 
+v1.5  09/10/2021  Siren added
+v1.4  09/09/2021 
 v1.3  09/09/2021  
 v1.2  09/09/2021  Remove music/added status
 v1.1  09/08/2021
@@ -21,9 +23,10 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 */
 import java.text.SimpleDateFormat
 metadata {
-    definition (name: "PI Talk no cloud", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
+    definition (name: "PI Talk media controler", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
-	capability "Chime"
+	    capability "Chime"
+        capability "Alarm"
 //       capability "Speech Synthesis"
 //        capability "AudioNotification"
 //        capability "MusicPlayer"
@@ -37,15 +40,32 @@ metadata {
         input("code", "text", title: "Hubs name", description: "to identify the hub in the pi log")
         input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
         input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
+        input("scode", "text", title: "chime # for siren", description: "Number for siren mp3 file ")
 
     }              
 }
 
-
-
-
-
-
+def siren(cmd){
+  playSound(scode)
+  log.info "${device} :siren"
+  sendEvent(name: "siren", value: "on")  
+  sendEvent(name: "siren", value: "off")
+  sendEvent(name: "strobe", value: "off") 
+}
+def strobe(cmd){
+  playSound(scode)
+  log.info "${device} :strobe"
+  sendEvent(name: "siren", value: "on")  
+  sendEvent(name: "siren", value: "off")
+  sendEvent(name: "strobe", value: "off")  
+}
+def both(cmd){
+  playSound(scode)
+  log.info "${device} :siren / strobe"
+  sendEvent(name: "siren", value: "on")  
+  sendEvent(name: "siren", value: "off")
+  sendEvent(name: "strobe", value: "off")   
+}
 def playSound(soundnumber){
 // codes are set at the hub    
      def params = [
