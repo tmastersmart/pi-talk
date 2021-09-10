@@ -1,5 +1,7 @@
 /**
 Hubitat driver to connect to rasbery pi and talk
+capability Notification,Chime,Alarm
+
 
  (c) 2021 by tmastersmart winnfreenet.com all rights reserved
   permission to use on hubiat for free
