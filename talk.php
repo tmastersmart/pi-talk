@@ -4,11 +4,14 @@
 //  Permission granted to install and use wuith hubitat for free   
 //
 //   
-//  Pi talk,Chime, Siren controler
-//  
+//  Pi talk,Chime, Siren,media
+
+//  v2.3 9/11/2021
+//  v2.2 9/10/2021
 //  v2.1 9/10/2021
 //  v2.0 9/09/2021
 //  
+//  place file in /var/www/html/
 //  ------------------------------------------------------------
 
 include "input-scan.php";
@@ -29,22 +32,27 @@ $cmd1="/home/pi/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
 $cmd2="/home/pi/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
 $cmd3="/home/pi/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
 
-// v1 wav file
 if($talk){
  $header= false;
- $file="/home/pi/talk.wav";  if(file_exists($file))  { unlink ($file);} 
- $save="$lang$voice '$talk'";
- $send="espeak $lang$voice -w $file '$talk'";
- exec($send, $output, $return_var ); 
-# build the v2 text command files
+// old v1 code testing only 
+$file="/home/pi/talk.wav";  if(file_exists($file))  { unlink ($file);}// cleanup for v1
+// $send="espeak $lang$voice -w $file '$talk'";
+// exec($send, $output, $return_var ); 
+ 
+// build the v2 text command files
 $fileOUT = fopen($cmd1, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$talk") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 $fileOUT = fopen($cmd2, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$lang$voice") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 }
 
 if ($play){
-// test the chime to see if it exists in wav or mp3    any others?
+// find the location of the file or 403 error
+// look in home/pi/
 if(file_exists("/home/pi/$play.wav"))  { $ok=true; $play="/home/pi/$play.wav";}
 if(file_exists("/home/pi/$play.mp3"))  { $ok=true; $play="/home/pi/$play.mp3";}
+// look in /home/pi/Music
+if(file_exists("/home/pi/Music/$play.wav"))  { $ok=true; $play="/home/pi/Music/$play.wav";}
+if(file_exists("/home/pi/Music/$play.mp3"))  { $ok=true; $play="/home/pi/Music/$play.mp3";}
+
 $talk="(Chime $play)";
 if($ok){
         $fileOUT = fopen($cmd3, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$play") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
@@ -54,7 +62,8 @@ if($ok){
 if ($header){
     header("HTTP/1.1 404 Not Found");
     header("Status: 404 Not Found");
-    $return_var= "404 Not Found";
+    $return_var= "404 Not Found (Check permissions user www needs access to root)";
+    
     }
 
 $datum = date('[Y-m-d H:i:s]'); 
