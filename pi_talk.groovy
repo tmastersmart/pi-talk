@@ -1,15 +1,16 @@
 /**
+PI Talk media controler
 Hubitat driver to connect to rasbery pi and talk
-capability Notification,Chime,Alarm
+capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis
 
-
- (c) 2021 by tmastersmart winnfreenet.com all rights reserved
+ (c) 2021 by WinnFreeNet.com all rights reserved
   permission to use on hubiat for free
 
-v1.5  09/10/2021  Siren added
+v1.6  09/11/2021 Music player/SpeechSynthesis added
+v1.5  09/10/2021 Siren added
 v1.4  09/09/2021 
 v1.3  09/09/2021  
-v1.2  09/09/2021  Remove music/added status
+v1.2  09/09/2021 
 v1.1  09/08/2021
 v1.0  09/08/2021 
 
@@ -25,14 +26,13 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 */
 import java.text.SimpleDateFormat
 metadata {
-    definition (name: "PI Talk media controler", namespace: "tmastersmart", author: "Tmaster", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
+    definition (name: "PI Talk media controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
 	    capability "Chime"
         capability "Alarm"
-//       capability "Speech Synthesis"
 //        capability "AudioNotification"
-//        capability "MusicPlayer"
-//        capability "SpeechSynthesis"
+        capability "MusicPlayer"
+        capability "SpeechSynthesis"
        
  }
 
@@ -95,15 +95,48 @@ def playSound(soundnumber){
 }
 
 
+// unsuported music handler error trap
+def customError (st){
+  sendEvent(name: "received", value: "${st}")
+  log.info "${device} :${st} received Not supported"
+  sendEvent(name: "status", value: "error")     
+}
+def    off(ok)      {customError("OFF")}
+def   mute(ok)      {customError("MUTE")}
+def unmute(ok)      {customError("UNMUTE")}
+def restoreTrack(ok){customError("RestoreTrack")} 
+def previousTrack(ok){customError("previousTrack")} 
+def resumeTrack(ok) {customError("resumeTrack")} 
+def setLevel(ok)    {customError("SetLevel")} 
+def setTrack(ok)    {customError("setTrack")} 
+def nextTrack(ok)   {customError("nextTrack")} 
+def pause(ok)       {customError("PAUSE")} 
+def stop(ok)        {customError("STOP")}
+def playTrack(ok)   {customError("playTrack")}
+
+
+// redirect these                    
+def play(ok){
+    log.info "${device} :Play received Playing 1 default"
+    playSound(1)
+}
+def playText(message){
+  playSound(message)
+  log.info "${device} :PlayTest sound by filename "  
+}
+
+
+// speach values: [hello, 1, name]
+// need to pull out first varable
 def speak(message) {
     deviceNotification(message)
 }
 
-def deviceNotification(message) {
 
-    
-// what is the varable for the hubs name
-     def params = [
+
+
+def deviceNotification(message) {
+    def params = [
             uri: "${url}",
         query: [
             "talk": "${message}",
@@ -124,7 +157,6 @@ def deviceNotification(message) {
                 log.info "${device} :Received ok"
                 sendEvent(name: "status", value: "ok")
             }
-        
     }
 }
 
