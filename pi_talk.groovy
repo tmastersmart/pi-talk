@@ -6,6 +6,7 @@ capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis
  (c) 2021 by WinnFreeNet.com all rights reserved
   permission to use on hubiat for free
 
+v1.7  09/11/2021 PlayTrack support added 
 v1.6  09/11/2021 Music player/SpeechSynthesis added
 v1.5  09/10/2021 Siren added
 v1.4  09/09/2021 
@@ -104,25 +105,38 @@ def customError (st){
 def    off(ok)      {customError("OFF")}
 def   mute(ok)      {customError("MUTE")}
 def unmute(ok)      {customError("UNMUTE")}
-def restoreTrack(ok){customError("RestoreTrack")} 
 def previousTrack(ok){customError("previousTrack")} 
-def resumeTrack(ok) {customError("resumeTrack")} 
 def setLevel(ok)    {customError("SetLevel")} 
 def setTrack(ok)    {customError("setTrack")} 
 def nextTrack(ok)   {customError("nextTrack")} 
 def pause(ok)       {customError("PAUSE")} 
 def stop(ok)        {customError("STOP")}
-def playTrack(ok)   {customError("playTrack")}
 
 
-// redirect these                    
+
+
+def restoreTrack(message){
+  log.info "${device} :restoreTrack ${message}"  
+  playSound(message)	
+}
+
+
+def resumeTrack(message){
+  log.info "${device} :resumeTrack ${message}" 
+  playSound(message)	
+}
+
+def playTrack(message){
+  log.info "${device} :PlayTrack ${message}"  
+  playSound(message)
+}
+                 
 def play(ok){
     log.info "${device} :Play received Playing 1 default"
     playSound(1)
 }
 def playText(message){
-  playSound(message)
-  log.info "${device} :PlayTest sound by filename "  
+  deviceNotification(message) 
 }
 
 
