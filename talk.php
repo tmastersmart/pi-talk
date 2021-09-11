@@ -5,13 +5,14 @@
 //
 //   
 //  Pi talk,Chime, Siren,media
-
+//  
+//  v2.4 9/11/2021 
 //  v2.3 9/11/2021
 //  v2.2 9/10/2021
 //  v2.1 9/10/2021
 //  v2.0 9/09/2021
 //  
-//  place file in /var/www/html/
+//  place php files in /var/www/html/
 //  ------------------------------------------------------------
 
 include "input-scan.php";
@@ -27,15 +28,15 @@ if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
 if (!$voice){$voice="+f1";}
 
 $header = true;
-$log ="/home/pi/talk.log"; 
-$cmd1="/home/pi/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
-$cmd2="/home/pi/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
-$cmd3="/home/pi/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
+$log ="/var/www/html/talk.log"; 
+$cmd1="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
+$cmd2="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
+$cmd3="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
 
 if($talk){
  $header= false;
 // old v1 code testing only 
-$file="/home/pi/talk.wav";  if(file_exists($file))  { unlink ($file);}// cleanup for v1
+//$file="/home/pi/talk.wav";  if(file_exists($file))  { unlink ($file);}// cleanup for v1
 // $send="espeak $lang$voice -w $file '$talk'";
 // exec($send, $output, $return_var ); 
  
@@ -53,7 +54,7 @@ if(file_exists("/home/pi/$play.mp3"))  { $ok=true; $play="/home/pi/$play.mp3";}
 if(file_exists("/home/pi/Music/$play.wav"))  { $ok=true; $play="/home/pi/Music/$play.wav";}
 if(file_exists("/home/pi/Music/$play.mp3"))  { $ok=true; $play="/home/pi/Music/$play.mp3";}
 
-$talk="(Chime $play)";
+$talk="(Play $play)";
 if($ok){
         $fileOUT = fopen($cmd3, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$play") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
         $header=false;
