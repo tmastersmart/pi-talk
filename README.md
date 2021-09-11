@@ -23,18 +23,25 @@ if ok do next if not you need to fix your speakers first
 run the install 
 sudo bash install.sh
 
-If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server. 
+If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server.
+
 
 http://0.0.0.0/talk.php?talk=test should set files to talk
 
 bash talk2.sh   should speak those works out the speaker.
 
 http://0.0.0.0/talk.php?play=1 should set 1.mp3 or 1.wav  to be played
+http://0.0.0.0/talk.php?play=bell should set bell.mp3 or bell.wav  to be played
+it will seatch /home/pi/Music and /home/pi for the file.
 
-bash talk2.sh   will play the 1.mp3 file
+Load your sound files in one of thiose directories
 
-you can play a unlimited # of chimes just place them and name them 1 2 3 in the home directory
-.wav or .mp3
+bash talk2.sh   will play the file
+
+you can play a unlimited # of chimes named 1 2 3 .wav or .mp3
+Or using the music play command you can play a file by name do not include
+the ext  http://0.0.0.0/talk.php?play=bell will play bell.mp3 
+
 
 Once this is all working import the driver in hubitat.
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
@@ -59,6 +66,11 @@ You also need to add a log rotation for /home/pi/talk.log
 
 Webmin is recomended with it you can set up log rotation and start up options using a web interface. 
 https://www.webmin.com/deb.html
+
+The webserver needs permission to read from /home/pi/Music and write to /home/pi
+It should have access if it was installe by pi home but if it cant do this and 
+you see no log in home go to webmin access user www-data and add it to group root. 
+
 
 You may modify espeak command the docs are here
 http://espeak.sourceforge.net/commands.html
