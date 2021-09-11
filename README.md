@@ -11,6 +11,7 @@ This allows your pi to speak offline.
 =========================================================================================
 
 
+v2 install 
 Install as follows
 
 place php files in /var/www/html
@@ -36,7 +37,7 @@ it will seatch /home/pi/Music and /home/pi for the file.
 
 Load your sound files in one of thiose directories
 
-bash talk2.sh   will play the file
+bash talk.sh   will play the file
 
 you can play a unlimited # of chimes named 1 2 3 .wav or .mp3
 Or using the music play command you can play a file by name do not include
@@ -51,25 +52,25 @@ Go to the driver and enter the url to your pi the name of your server and the vo
 on the pi type 'espeak --voices' to get a list
 
 send a message using the option in the driver then run
-bash talk2.sh  and it should speak
+bash talk.sh  and it should speak
 
 select PLAY 1 and it should set 1.mp3 to play
-bash talk2.sh should play 1.mp3
+bash talk.sh should play 1.mp3
 
 
-Create a chron to run every min and load bash talk2.sh
+Create a chron to run every min and load bash talk.sh
 
-or open a terminal and type 'watch -n 10 /home/pi/talk2.sh'
+or open a terminal and type 'watch -n 10 /home/pi/talk.sh'
 
 
-You also need to add a log rotation for /home/pi/talk.log
+You also need to add a log rotation for /var/www/html/talk.log
 
 Webmin is recomended with it you can set up log rotation and start up options using a web interface. 
 https://www.webmin.com/deb.html
 
-The webserver needs permission to read from /home/pi/Music and write to /home/pi
-It should have access if it was installe by pi home but if it cant do this and 
-you see no log in home go to webmin access user www-data and add it to group root. 
+The webserver needs permission to read from /home/pi/Music and /home/pi
+if it cant do this and you see no log go to webmin access user www-data
+and add it to group root. 
 
 
 You may modify espeak command the docs are here
@@ -79,9 +80,6 @@ http://espeak.sourceforge.net/commands.html
 if you use this please post a comment here
 http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
 
-
-Notes: v1 used talk.sh to play wav file holding the text. This is here for a backup
-will likely be removed later
 
 
 If you need sounds just about any sound you can find online will work.
