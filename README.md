@@ -26,18 +26,19 @@ sudo bash install.sh
 
 If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server.
 
+launch this script at startup
+nohup bash /home/pi/talk.sh > /dev/null 2>&1 
+It stays running and loops every 10secs
 
-http://0.0.0.0/talk.php?talk=test should set files to talk
 
-bash talk2.sh   should speak those works out the speaker.
+http://0.0.0.0/talk.php?talk=test should say test
+http://0.0.0.0/talk.php?play=1 should play 1.mp3 or 1.wav 
+http://0.0.0.0/talk.php?play=bell should play bell.mp3 or bell.wav
+it will search /home/pi/Music and /home/pi for the file.
+Web server needs permission to read from both directories or will
+exit with 404 file not found
 
-http://0.0.0.0/talk.php?play=1 should set 1.mp3 or 1.wav  to be played
-http://0.0.0.0/talk.php?play=bell should set bell.mp3 or bell.wav  to be played
-it will seatch /home/pi/Music and /home/pi for the file.
-
-Load your sound files in one of thiose directories
-
-bash talk.sh   will play the file
+Load your sound files in one of those directories
 
 you can play a unlimited # of chimes named 1 2 3 .wav or .mp3
 Or using the music play command you can play a file by name do not include
@@ -51,27 +52,11 @@ save it and add a virtual device using this driver.
 Go to the driver and enter the url to your pi the name of your server and the voice you want to use
 on the pi type 'espeak --voices' to get a list
 
-send a message using the option in the driver then run
-bash talk.sh  and it should speak
-
-select PLAY 1 and it should set 1.mp3 to play
-bash talk.sh should play 1.mp3
-
-
-Create a chron to run every min and load bash talk.sh
-
-or open a terminal and type 'watch -n 10 /home/pi/talk.sh'
-
 
 You also need to add a log rotation for /var/www/html/talk.log
 
 Webmin is recomended with it you can set up log rotation and start up options using a web interface. 
 https://www.webmin.com/deb.html
-
-The webserver needs permission to read from /home/pi/Music and /home/pi
-if it cant do this and you see no log go to webmin access user www-data
-and add it to group root. 
-
 
 You may modify espeak command the docs are here
 http://espeak.sourceforge.net/commands.html
@@ -85,6 +70,6 @@ http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-scri
 If you need sounds just about any sound you can find online will work.
 see   https://soundbible.com/tags-dog-bark.html  
 
-For copyright reasions I have to find PD files to include a sample
+For copyright reasions do mp3s included....
 
 
