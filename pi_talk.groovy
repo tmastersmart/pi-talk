@@ -2,10 +2,13 @@
 PI Talk media controler
 Hubitat driver to connect to rasbery pi and talk
 capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis
+===============================================================
 
- (c) 2021 by WinnFreeNet.com all rights reserved
-  permission to use on hubiat for free
+Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
+
+
+v1.8  09/13/2021 Error Detection added (PI now reports 404 not found for missing mp3)
 v1.7  09/11/2021 PlayTrack support added 
 v1.6  09/11/2021 Music player/SpeechSynthesis added
 v1.5  09/10/2021 Siren added
@@ -19,11 +22,13 @@ v1.0  09/08/2021
 you need to get talk.php and talk.sh to run on your pi see this url
 https://github.com/tmastersmart/pi-talk/tree/main
 
+
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
-*   
-* 
-*
+* =================================================  
+  (c) 2021 by WinnFreeNet.com all rights reserved
+  permission to use on hubiat for free
+* =================================================
 */
 import java.text.SimpleDateFormat
 metadata {
@@ -82,16 +87,34 @@ def playSound(soundnumber){
 	
    log.info "${device} :Sending Chime: ${url}?play=${soundnumber}"    
    sendEvent(name: "received", value: "${soundnumber}")
-    httpPost(params){response ->
-            if(response.status != 200) {
-                log.error "${device} :Error ${response.status}" 
-                sendEvent(name: "status", value: "Error ${response.status}")
-            }
-            else {
-                log.info "${device} :Received ok"
-                sendEvent(name: "status", value: "ok")
-            }
+
+    
+//    httpPost(params){response ->
+//            if(response.status != 200) {
+//            log.error "${device} :Error ${response.status}" 
+//                sendEvent(name: "status", value: "Error ${response.status}")
+//}
+//else {
+//               log.info "${device} :Received ok"
+//                sendEvent(name: "status", value: "ok")
+//            }
         
+// improved post    
+        try {
+        httpPost(params) { resp ->
+            if (resp.success) {
+               log.info "${device} :Received at pi ok"
+               sendEvent(name: "status", value: "ok")
+            }
+            else {log.info "${device} : Received Status ${resp.status}"}
+        }
+    } catch (Exception e) {
+        sendEvent(name: "status", value: "Error ${e.message}")    
+        log.warn "${device} Error: ${e.message}"
+  
+    
+    
+    
     }
 }
 
@@ -151,26 +174,40 @@ def speak(message) {
 
 def deviceNotification(message) {
     def params = [
-            uri: "${url}",
-        query: [
-            "talk": "${message}",
-            "code": "${code}",
-            "voice": "${voice}",
-            "lang": "${lang}",
-        ]
+        uri: "${url}",
+        query: ["talk": "${message}","code": "${code}","voice": "${voice}","lang": "${lang}",]
     ]
-
+ 
    log.info "${device} :Sending Message: ${url}?talk=${message}"    
    sendEvent(name: "received", value: "${message}")
-    httpPost(params){response ->
-            if(response.status != 200) {
-                log.error "${device} :Error ${response.status}" 
-                sendEvent(name: "status", value: "Error ${response.status}")
+    
+// improved post    
+        try {
+        httpPost(params) { resp ->
+            if (resp.success) {
+               log.info "${device} :Received at pi ok"
+               sendEvent(name: "status", value: "ok")
             }
-            else {
-                log.info "${device} :Received ok"
-                sendEvent(name: "status", value: "ok")
-            }
+            else {log.info "${device} : Received Status ${resp.status}"}
+        }
+    } catch (Exception e) {
+        sendEvent(name: "status", value: "Error ${e.message}")    
+        log.warn "${device} Error: ${e.message}"
+  
+    
+    
+    
+    
+//   old way 
+//    httpPost(params){response ->
+//            if(response.status != 200) {
+//                log.error "${device} :Error ${response.status}" 
+//                sendEvent(name: "status", value: "Error ${response.status}")
+//            }
+//            else {
+//                log.info "${device} :Received ok"
+//                sendEvent(name: "status", value: "ok")
+//            }
     }
 }
 
