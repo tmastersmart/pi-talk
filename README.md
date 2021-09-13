@@ -27,14 +27,21 @@ sudo bash install.sh
 If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server.
 
 launch this script at startup
+
 nohup bash /home/pi/talk.sh > /dev/null 2>&1 
+
 It stays running and loops every 10secs
 
 
+
 http://0.0.0.0/talk.php?talk=test should say test
-http://0.0.0.0/talk.php?play=1 should play 1.mp3 or 1.wav 
+
+http://0.0.0.0/talk.php?play=1 should play 1.mp3 or 1.wav
+
 http://0.0.0.0/talk.php?play=bell should play bell.mp3 or bell.wav
+
 it will search /home/pi/Music and /home/pi for the file.
+
 Web server needs permission to read from both directories or will
 exit with 404 file not found
 
