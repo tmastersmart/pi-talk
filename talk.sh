@@ -3,13 +3,14 @@
 # (c) 2021 by tmastersmart winnfreenet.com all rights reserved
 #  permission to use on hubiat for free
 # 
+# 
+# v2.5 9/13/2021 now loops with 10sec delay run once.
 # v2.4 9/11/2021 moving files into webserver directory
 # 
-# Play the talk file v2.0
-# 
-# run with 'watch -n 10 talk2.sh'   for looping every 10 sec
-# launch on start up.
-
+#  
+# launch on start up.   set chron to launch on startup 
+# loops every 10 sec and runns all the time
+# nohup bash /home/pi/talk.sh > /dev/null 2>&1
 # 
 # place file in /home/pi/
 # place audio files in /home/pi/
@@ -17,11 +18,16 @@
 # 
 # For Hubitat users 
 # -------------------------------------------------------------
-
 PLAY=/var/www/html/chime.txt
 MSG1=/var/www/html/talk1.txt
 MSG2=/var/www/html/talk2.txt
  LOG=/var/www/html/talk.log
+ 
+while true
+do
+ 
+ 
+ 
 DATE=`date +"%Y-%m-%d %T"`
 if [[  -f $MSG1 ]] ; then
     
@@ -55,3 +61,6 @@ if [[  -f $PLAY ]] ; then
     rm $PLAY
  fi
 
+#  adjust this to change loop speed 10 sec
+  sleep 10
+done 
