@@ -20,6 +20,8 @@ and .sh files in /home/pi/
 run this to test
 aplay /usr/share/sounds/alsa/*
 if ok do next if not you need to fix your speakers first
+if not see manual install https://behind-the-scenes.net/using-espeak-to-make-a-raspberry-pi-talk/
+
 
 run the install 
 sudo bash install.sh
