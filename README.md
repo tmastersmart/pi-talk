@@ -1,5 +1,7 @@
 # pi-talk
-Hubitat driver to connect to rasbery pi and talk capability Notification,Chime,Alarm
+Hubitat driver to connect to rasbery pi and talk 
+
+capability Notification,Chime,Alarm,button,switch GPIO
 ----------------------------------------------------------------------------------------
 (c) 2021 by tmastersmart winnfreenet.com
 Licensed for use on hubitat
@@ -77,6 +79,14 @@ http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-scri
 
 If you need sounds just about any sound you can find online will work.
 see   https://soundbible.com/tags-dog-bark.html  
+
+Update:
+Now supports changing GPIO states to switch relays. Caution be sure you know what
+your doing. if you dont want to use keep GPIO set to 0 to disable. 
+Valid settings for switch or button 1 are 1,7,8,9,10,11,14,15,16,18,22,23,24,25 
+Any thoughts on which pins you need is welcome. More work will be done on this
+
+
 
 For copyright reasions do mp3s included....
 
