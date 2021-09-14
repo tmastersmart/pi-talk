@@ -1,13 +1,13 @@
 /**
-PI Talk media controler
+PI Talk media GPIO controler
 Hubitat driver to connect to rasbery pi and talk
-capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis
+capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,switch,buton
 ===============================================================
 
 Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
 
-
+v1.9  09/13/2021 Switch and button support added via GPIO (better logs)
 v1.8  09/13/2021 Error Detection added (PI now reports 404 not found for missing mp3)
 v1.7  09/11/2021 PlayTrack support added 
 v1.6  09/11/2021 Music player/SpeechSynthesis added
@@ -32,14 +32,15 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 */
 import java.text.SimpleDateFormat
 metadata {
-    definition (name: "PI Talk media controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
+    definition (name: "PI Talk media switch controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
         capability "Notification"
 	    capability "Chime"
         capability "Alarm"
 //        capability "AudioNotification"
         capability "MusicPlayer"
         capability "SpeechSynthesis"
-       
+        capability "PushableButton"
+        capability "Switch"
  }
 
                 
@@ -49,9 +50,108 @@ metadata {
         input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
         input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
         input("scode", "text", title: "chime # for siren", description: "Number for siren mp3 file ")
+        input("gpio1", "text", title: "GPIO1 switch", description: "number of GPIO to SWITCH 7 (0 disable)",defaultValue: "0")
+        input("gpio2", "text", title: "GPIO2 button", description: "number of GPIO for Button 10 (0 disable)",defaultValue: "0")
 
     }              
 }
+
+    
+
+def push(button) {
+       def params = [
+            uri: "${url}",
+        query: [
+            "gpio": "${gpio2}",
+            "switch": "2",
+            "button": "${button}",
+            "key": "01020304"
+        ]
+    ]
+	
+   log.info "${device} :Button 1 Pushed GPIO2 ${gpio2}"    
+   
+// improved post    
+        try {
+        httpPost(params) { resp ->
+            if (resp.success) {
+               log.info "${device} :Received at pi ok"
+               sendEvent(name: "status", value: "ok")
+               sendEvent(name: "pushed", value: "1", isStateChange: true, type: "digital")
+            }
+            else {log.info "${device} : Received Status ${resp.status}"}
+        }
+    } catch (Exception e) {
+        sendEvent(name: "status", value: "Error ${e.message}")    
+        log.warn "${device} Error: ${e.message}"
+    // we dont send a event for switch if error 
+    }
+}
+
+
+
+def off(cmd){
+// key is expansion    
+       def params = [
+            uri: "${url}",
+        query: [
+            "gpio": "${gpio1}",
+            "switch": "0",
+            "key": "01020304"
+        ]
+    ]
+	
+   log.info "${device} :OFF GPIO1 ${gpio1}"    
+   
+// improved post    
+        try {
+        httpPost(params) { resp ->
+            if (resp.success) {
+               log.info "${device} :Received at pi ok"
+               sendEvent(name: "status", value: "ok")
+               sendEvent(name: "switch", value: "off")// let the hub know
+            }
+            else {log.info "${device} : Received Status ${resp.status}"}
+        }
+    } catch (Exception e) {
+        sendEvent(name: "status", value: "Error ${e.message}")    
+        log.warn "${device} Error: ${e.message}"
+    // we dont send a event for switch if error 
+    }
+  
+}
+
+def on(cmd){
+// key is expansion    
+       def params = [
+            uri: "${url}",
+        query: [
+            "gpio": "${gpio1}",
+            "switch": "1",
+            "key": "01020304"
+        ]
+    ]
+	
+   log.info "${device} :ON GPIO1 ${gpio1}"    
+   
+// improved post    
+        try {
+        httpPost(params) { resp ->
+            if (resp.success) {
+               log.info "${device} :Received at pi ok"
+               sendEvent(name: "status", value: "ok")
+               sendEvent(name: "switch", value: "on")// let the hub know
+            }
+            else {log.info "${device} : Received Status ${resp.status}"}
+        }
+    } catch (Exception e) {
+        sendEvent(name: "status", value: "Error ${e.message}")    
+        log.warn "${device} Error: ${e.message}"
+    // we dont send a event for switch if error 
+    }
+  
+}
+
 
 def siren(cmd){
   playSound(scode)
@@ -75,30 +175,17 @@ def both(cmd){
   sendEvent(name: "strobe", value: "off")   
 }
 def playSound(soundnumber){
-// codes are set at the hub    
-     def params = [
+    def params = [
             uri: "${url}",
         query: [
             "play": "${soundnumber}",
             "code": "${code}",
         ]
     ]
-
 	
-   log.info "${device} :Sending Chime: ${url}?play=${soundnumber}"    
+   log.info "${device} :Playing File: ${url}?play=${soundnumber}"    
    sendEvent(name: "received", value: "${soundnumber}")
 
-    
-//    httpPost(params){response ->
-//            if(response.status != 200) {
-//            log.error "${device} :Error ${response.status}" 
-//                sendEvent(name: "status", value: "Error ${response.status}")
-//}
-//else {
-//               log.info "${device} :Received ok"
-//                sendEvent(name: "status", value: "ok")
-//            }
-        
 // improved post    
         try {
         httpPost(params) { resp ->
@@ -111,10 +198,7 @@ def playSound(soundnumber){
     } catch (Exception e) {
         sendEvent(name: "status", value: "Error ${e.message}")    
         log.warn "${device} Error: ${e.message}"
-  
-    
-    
-    
+ 
     }
 }
 
@@ -122,10 +206,10 @@ def playSound(soundnumber){
 // unsuported music handler error trap
 def customError (st){
   sendEvent(name: "received", value: "${st}")
-  log.info "${device} :${st} received Not supported"
+  log.error "${device} :${st} received Not supported"
   sendEvent(name: "status", value: "error")     
 }
-def    off(ok)      {customError("OFF")}
+
 def   mute(ok)      {customError("MUTE")}
 def unmute(ok)      {customError("UNMUTE")}
 def previousTrack(ok){customError("previousTrack")} 
