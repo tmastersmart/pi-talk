@@ -4,8 +4,9 @@
 //  Permission granted to install and use wuith hubitat for free   
 //
 //   
-//  Pi talk,Chime, Siren,media
+//  Pi talk,Chime, Siren,media,switch,button
 //  
+//  v2.5 9/13/2021 GPIO added
 //  v2.4 9/11/2021 
 //  v2.3 9/11/2021
 //  v2.2 9/10/2021
@@ -13,16 +14,20 @@
 //  v2.0 9/09/2021
 //  
 //  place php files in /var/www/html/
+//  
+//  all errors are 404 back to the hub. Actual error in PI log.
 //  ------------------------------------------------------------
 
 include "input-scan.php";
 for ($i=0; $i < sizeof($fieldNames); $i++) {
-if ($fieldNames[$i] == 'talk')    {$talk= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'talk')    {  $talk= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'device')  {$device= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'code')    {$code= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'voice')   {$voice= $fieldValues[$i];} 
-if ($fieldNames[$i] == 'lang')    {$lang= $fieldValues[$i]; }                                   
-if ($fieldNames[$i] == 'play')    {$play= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'code')    {  $code= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'voice')   { $voice= $fieldValues[$i]; } 
+if ($fieldNames[$i] == 'lang')    {  $lang= $fieldValues[$i]; }                                   
+if ($fieldNames[$i] == 'play')    {  $play= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'gpio')    {  $gpio= $fieldValues[$i]; }
+if ($fieldNames[$i] == 'switch')  {$switch= $fieldValues[$i]; }
 }
 if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
 if (!$voice){$voice="+f1";}
@@ -60,12 +65,48 @@ if($ok){
         $header=false;
        }
 }
+
+if($gpio){
+   $header=true;$ok=false; 
+// at this time I dont have a safe list of GPIOs
+// https://elinux.org/RPi_Low-level_peripherals
+
+ if($gpio == "7") { $ok=true; }//
+ if($gpio == "8") { $ok=true; }//
+ if($gpio == "9") { $ok=true; }//
+ if($gpio == "10"){ $ok=true; } // 
+ if($gpio == "11"){ $ok=true; } //
+ if($gpio == "14"){ $ok=true; } // 
+ if($gpio == "15"){ $ok=true; } // 
+ if($gpio == "17"){ $ok=true; }// 
+ if($gpio == "18"){ $ok=true; }//
+ if($gpio == "22"){ $ok=true; }// 
+ if($gpio == "23"){ $ok=true; }//
+ if($gpio == "24"){ $ok=true; }// 
+ if($gpio == "25"){ $ok=true; }// 
+
+
+ $talk="GPIO $gpio $switch"; // tell the log what we are doing
+
+ if($ok){
+     $send="gpio-g mode $gpio out";    exec($send, $output, $return_var ); $save=$return_var;
+      if ($switch==0){$send="gpio-g write $gpio 0";exec($send, $output, $return_var ); $return_var="$save : $return_var";}
+      if ($switch==1){$send="gpio-g write $gpio 1";exec($send, $output, $return_var ); $return_var="$save : $return_var";}
+      if ($switch==2){ 
+      $send="gpio-g write $gpio 1";exec($send, $output, $return_var ); $save = "$save : $return_var";
+      sleep(3);
+      $send="gpio-g write $gpio 0";exec($send, $output, $return_var ); $return_var="$save : $return_var";    
+     }
+    $header= false; 
+ }
+}
+
+
 if ($header){
     header("HTTP/1.1 404 Not Found");
     header("Status: 404 Not Found");
-    $return_var= "404 Not Found (Check permissions user www needs access to root)";
-    
-    }
+    $return_var= "404 Not Found (Check permissions)";
+   }
 
 $datum = date('[Y-m-d H:i:s]'); 
 $status = "$datum : Message:$talk From:$code $device status:$format $return_var";
