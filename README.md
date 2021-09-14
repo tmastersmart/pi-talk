@@ -91,6 +91,6 @@ Switch turns on or off 1 GPIO, Button Turns on a GPIO waits and then turns it of
 
 
 
-For copyright reasions do mp3s included....
+For copyright reasions no mp3s included....
 
 
