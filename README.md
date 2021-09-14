@@ -82,9 +82,12 @@ see   https://soundbible.com/tags-dog-bark.html
 
 Update:
 Now supports changing GPIO states to switch relays. Caution be sure you know what
-your doing. if you dont want to use keep GPIO set to 0 to disable. 
-Valid settings for switch or button 1 are 1,7,8,9,10,11,14,15,16,18,22,23,24,25 
-Any thoughts on which pins you need is welcome. More work will be done on this
+your doing. if you dont want to use keep GPIO set to 0 to disable.
+
+Valid settings for switch or button 1 are 1,7,8,9,10,11,14,15,16,18,22,23,24,25
+
+Any thoughts on which pins you need is welcome. More work will be done on this, 
+Switch turns on or off 1 GPIO, Button Turns on a GPIO waits and then turns it off.
 
 
 
