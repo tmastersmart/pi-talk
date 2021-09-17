@@ -10,5 +10,6 @@ sudo apt-get update
 sudo apt-get install espeak
 sudo apt-get install omxplayer
 sudo apt-get install gnuplot
+sudo apt-get install libraspberrypi-bin
 espeak "Your Install is finished" 2> /dev/null
 
