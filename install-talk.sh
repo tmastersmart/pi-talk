@@ -9,5 +9,6 @@ echo "now installing espeak omxplayer"
 sudo apt-get update
 sudo apt-get install espeak
 sudo apt-get install omxplayer
+sudo apt-get install gnuplot
 espeak "Your Install is finished" 2> /dev/null
 
