@@ -5,7 +5,7 @@
 
 echo "you should hear talking"
 aplay /usr/share/sounds/alsa/*
-echo "now installing espeak omxplayer"
+echo "now installing espeak omxplayer gnuplot libraspberrypi-bin"
 sudo apt-get update
 sudo apt-get install espeak
 sudo apt-get install omxplayer
