@@ -2,10 +2,11 @@
 //  ------------------------------------------------------------
 //  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
 //  Permission granted to install and use wuith hubitat for free   
-//
+//  https://github.com/tmastersmart/pi-talk
 //   
 //  Pi talk,Chime, Siren,media,button
-//  
+//  v2.8 9-17-2021 
+//  v2.7 9-16-2021 server.txt file added
 //  v2.6 9-15-2021 
 //  v2.5 9/13/2021 GPIO added
 //  v2.4 9/11/2021 
@@ -14,10 +15,23 @@
 //  v2.1 9/10/2021
 //  v2.0 9/09/2021
 //  
-//  place php files in /var/www/html/
 //  
-//  all errors are 404 back to the hub. Actual error in PI log.
-//  ------------------------------------------------------------
+//  
+// ---------------------------------------------------
+// you need to install these files on your pi 
+// place php files in /var/www/html/
+// 
+// talk.php <-- this reveives commands from HUB
+// temp.php <-- this file post to HUB
+// input-scan.php <-- Safe loading of get and post
+// talk.sh  <-- this runs in a loop to take action
+// temp-chart.sh <-- Draws a png temp chart in /images 
+//
+// install-talk.sh <-- Installs extra programs you need
+//
+//https://github.com/tmastersmart/pi-talk
+//----------------------------------------------------
+
 
 include "input-scan.php";
 for ($i=0; $i < sizeof($fieldNames); $i++) {
@@ -34,7 +48,7 @@ if ($fieldNames[$i] == 'button')  {$button= $fieldValues[$i]; }
 if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
 if (!$voice){$voice="+f4";}// f4 works better than F1
 
-
+$server ="/var/www/html/server.txt"; 
 $log ="/var/www/html/talk.log"; 
 $cmd1="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
 $cmd2="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
@@ -107,5 +121,12 @@ $status = "$datum : Message:$talk From:$code $device status:$format $return_var"
 print $status;
 // save the log
 $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$status\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
+
+// save server info 
+if(!file_exists($server))  { 
+$send="gpio -v >>$server";exec($send, $output, $return_var ); 
+$send="gpio readall >>$server";exec($send, $output, $return_var ); 
+$send="gpio allreadall >>$server";exec($send, $output, $return_var ); 
+}
 
 
