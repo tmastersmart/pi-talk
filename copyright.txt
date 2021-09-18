@@ -1,0 +1,16 @@
+
+ ___________                   ____   ____.__                __      __
+\_   _____/______   ____   ___\   \ /   /|__| ______  _  __/  \    /  \_____ _______   ____
+ |    __) \_  __ \_/ __ \_/ __ \   Y   / |  |/ __ \ \/ \/ /\   \/\/   /\__  \\_  __ \_/ __ \
+ |     \   |  | \/\  ___/\  ___/\     /  |  \  ___/\     /  \        /  / __ \|  | \/\  ___/
+ \___  /   |__|    \___  >\___  >\___/   |__|\___  >\/\_/    \__/\  /  (____  /__|    \___  >
+ ============================================================================================
+ copyright 2021 Winnfreenet.com all rights reserved (permission to use on with Hubitat for free)
+ 
+ FreeViewWare (tm) 1997 I started writting in basic on the c64 creating BBS software and terminal software
+ Now days shareware doesnt work and Open Source is just like PD. So this software is copyrighted and
+ I select who to license it to. Right now its hubitat users for use on the hubitat system.
+ 
+ 
+ http://pws.winnfreenet.com/donate.php Paypal donation
+ 
