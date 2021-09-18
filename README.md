@@ -135,3 +135,4 @@ So far I have no ideal if anyone else is even intrested. Im basicaly building th
 myself right now. Once this is working if no one is intrested updates will only be internal.
 
 http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
+http://pws.winnfreenet.com/donate.php
