@@ -1,11 +1,13 @@
 /**
 PI Talk media GPIO controler
 Hubitat driver to connect to rasbery pi and talk
-capability Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,buton,Presence
-===============================================================
+capability 
+Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,buton,Presence,Temp,Volts
+=====================================================================================
 
 Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
+v2.2  09-17-2021 Log / Display improvments,Temp Volts Model 
 v2.1  09-16-2021 Button code changed
 v2.0  09-15-2021 Presence Sensor added. Switch removed due to OFF conflice with Strobe
 v1.9  09/13/2021 Switch and button support added via GPIO (better logs)
@@ -19,10 +21,18 @@ v1.2  09/09/2021
 v1.1  09/08/2021
 v1.0  09/08/2021 
 
+-------------------------------------------------
+you need to install these files on your pi 
+talk.php <-- this driver talks to this file
+temp.php <-- this file post back to this driver
+input-scan.php <-- Safe loading of get and post
+talk.sh  <-- this runs in a loop to take action
+temp-chart.sh <-- Draws a png temp chart in /images 
 
-you need to get talk.php and talk.sh to run on your pi see this url
+install-talk.sh <-- Installs extra programs on pi
+
 https://github.com/tmastersmart/pi-talk/tree/main
-
+-------------------------------------------------
 
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
@@ -33,7 +43,7 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 */
 import java.text.SimpleDateFormat
 metadata {
-    definition (name: "PI Talk media switch controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
+    definition (name: "PI Talk media GPIO controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
 		capability "Refresh"
         capability "Notification"
 	    capability "Chime"
@@ -42,31 +52,72 @@ metadata {
         capability "SpeechSynthesis"
         capability "PushableButton"
         capability "Presence Sensor"
+        capability "Temperature Measurement"
+
+        command "setModel", ["string"]
+        command "setTemperature", ["Number"]
+        command "setVolts", ["Number"]
+        command "setMemory", ["Number"]
+
+        attribute "Temperature", "string"
+        attribute "volts", "string"
  }
 
                 
     preferences {
         input("url", "text", title: "URL OF PI:", description: "http://0.0.0.0/talk.php",required: true)
+        input("url2",  "text", title: "Presence URL", description: "http://0.0.0.0/",required: true)
+        input("pollMinutes",  "text", title: "Polling Minutes", description: "Schedule to check",defaultValue: 10,required: true)
+
         input("code", "text", title: "Hubs name", description: "to identify the hub in the pi log",required: true)
         input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
         input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
-        input("scode", "text", title: "chime # for siren", description: "Number for siren mp3 file ")
+
+        input("scode", "text", title: "siren", description: "Chime Number or name of file for siren [dont enter.mp3]")
+
 
         input("gpio1", "text", title: "1st GPIO", description: "Button 1 on Button 2 OFF. number of GPIO (0 disable)",defaultValue: "0")
         input("gpio2", "text", title: "2nd GPIO", description: "Button 3 on Button 4 OFF. number of GPIO (0 disable)",defaultValue: "0")
-        input("gpio3", "text", title: "3rd GPIO", description: "Button 5 Press on wait then Off (0 disable)",defaultValue: "0")
-
-        input("url2",  "text", title: "Presence URL", description: "http://0.0.0.0",required: true)
-        input("pollMinutes",  "text", title: "Polling Minutes", description: "Schedule to check",defaultValue: 10,required: true)
-
+        input("gpio3", "text", title: "3rd GPIO", description: "Button 5 Push on momentary (0 disable)",defaultValue: "0")
 
     }              
 }
 
+def setModel(version) {
+    log.info "${device.displayName} Model is ${version}"    
+    updateDataValue("model", version)
+}
+def setMemory(version) {
+    log.info "${device.displayName} Memory is ${version}"    
+    updateDataValue("Memory", version)
+}
+def setVolts(coreVolts) {
+//    log.info "${device.displayName} PI Core Volts ${coreVolts}v"
+    sendEvent(name: "volts", value: coreVolts, descriptionText: "Core Volts", unit: "v")    
+   
+}
+
+def setTemperature(temp) {
+
+//    log.info "${device.displayName} PI Core Temp is ${temp}c"
+    sendEvent(name: "temperature", value: temp, descriptionText: "Core Temp", unit: "c")
+    
+// This Overides any not present
+    state.tryPresence = 0
+  		   if (device.currentValue('presence') == "not present") {
+           sendEvent(name: "presence", value: "present") 
+           sendEvent(name: "status", value: "ok", descriptionText: "Temp set Pressence", displayed: true)  
+           log.info "${device}: is Present Set by Temp"   
+         } 
+   
+}
 
 def push(button) {
+    
+// cleanup temp var
+    state.remove("gpioState")        
     state.gpioSwitch = ""
-    state.gpioState=0
+
 // button matrix    
     if (button == 1 ){
         state.gpio = gpio1 //Button 1 on Button 2 On
@@ -100,7 +151,7 @@ def push(button) {
     }
 
     if (state.gpioSwitch == ""){
-        sendEvent(name: "status", value: "Error")    
+        sendEvent(name: "status", value: "Error", descriptionText: "Button${button} not supported", displayed: true)    
         log.warn "${device} Error Button${button} not supported"
     }
        
@@ -114,6 +165,7 @@ def push(button) {
             "switch": "${state.gpioState}",
             "button": "${button}", // we really dont need this. Just for logging
             "code": "${code}",
+            "dev": "${device.deviceId}",
         ]
     ]
 	
@@ -124,24 +176,25 @@ def push(button) {
         httpPost(params) { resp ->
             if (resp.success) {
                log.info "${device} :Received at pi ok"
-               sendEvent(name: "status", value: "ok ${state.gpioSwitch}")
+               sendEvent(name: "status", value: "ok", descriptionText: "${state.gpioSwitch}", displayed: true) 
                sendEvent(name: "pushed", value: "${button}", isStateChange: true, type: "digital")
             }
             else {log.info "${device} : Received Status ${resp.status}"}
         }
     } catch (Exception e) {
-        sendEvent(name: "status", value: "Error ${e.message}")    
+        sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true)        
         log.warn "${device} Error: ${e.message}"
     // we dont send a event for switch if error 
     }
 }
 
 def off(cmd){
-// This does nothing but notify the hub we are off
-// Siren only plays sound then turns off but hub will
-// send off anyway
-  sendEvent(name: "siren", value: "off")
-  sendEvent(name: "strobe", value: "off") 
+// This does nothing but notify the hub we are off and log
+// We only play sounds no OFF is needed but hub will send it
+  sendEvent(name: "siren", value: "off", descriptionText: "We were already off", displayed: true)
+  sendEvent(name: "strobe", value: "off", descriptionText: "We were already off", displayed: true)
+  log.info "${device} :Ignoring OFF command" 
+  sendEvent(name: "status", value: "ok", descriptionText: "im ok", displayed: true)   
 }
 
 def siren(cmd){
@@ -168,10 +221,7 @@ def both(cmd){
 def playSound(soundnumber){
     def params = [
             uri: "${url}",
-        query: [
-            "play": "${soundnumber}",
-            "code": "${code}",
-        ]
+        query: ["play": "${soundnumber}","code": "${code}","dev": "${device.deviceId}",]
     ]
 	
    log.info "${device} :Playing File: ${url}?play=${soundnumber}"    
@@ -182,12 +232,12 @@ def playSound(soundnumber){
         httpPost(params) { resp ->
             if (resp.success) {
                log.info "${device} :Received at pi ok"
-               sendEvent(name: "status", value: "ok")
+               sendEvent(name: "status", value: "ok", descriptionText: "Playing : ${soundnumber}", displayed: true)
             }
             else {log.info "${device} : Received Status ${resp.status}"}
         }
     } catch (Exception e) {
-        sendEvent(name: "status", value: "Error ${e.message}")    
+        sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true)       
         log.warn "${device} Error: ${e.message}"
  
     }
@@ -195,10 +245,12 @@ def playSound(soundnumber){
 
 
 // unsuported music handler error trap
+// Hub needs these to be trapped or error thrown.
 def customError (st){
-  sendEvent(name: "received", value: "${st}")
-  log.error "${device} :${st} received Not supported"
-  sendEvent(name: "status", value: "error")     
+  sendEvent(name: "received", value: "${st}") 
+  log.warn "${device} :${st} Not supported yet"
+  sendEvent(name: "status", value: "error", descriptionText: "Unknown cmd", displayed: true) 
+
 }
 
 def   mute(ok)      {customError("MUTE")}
@@ -209,7 +261,6 @@ def setTrack(ok)    {customError("setTrack")}
 def nextTrack(ok)   {customError("nextTrack")} 
 def pause(ok)       {customError("PAUSE")} 
 def stop(ok)        {customError("STOP")}
-
 
 
 
@@ -248,9 +299,10 @@ def speak(message) {
 
 
 def deviceNotification(message) {
+    
     def params = [
         uri: "${url}",
-        query: ["talk": "${message}","code": "${code}","voice": "${voice}","lang": "${lang}",]
+        query: ["talk": "${message}","code": "${code}","voice": "${voice}","lang": "${lang}","dev": "${device.deviceId}",]
     ]
  
    log.info "${device} :Sending Message: ${url}?talk=${message}"    
@@ -261,12 +313,12 @@ def deviceNotification(message) {
         httpPost(params) { resp ->
             if (resp.success) {
                log.info "${device} :Received at pi ok"
-               sendEvent(name: "status", value: "ok")
+               sendEvent(name: "status", value: "ok", descriptionText: "Speaking : ${message}", displayed: true)
             }
             else {log.info "${device} : Received Status ${resp.status}"}
         }
     } catch (Exception e) {
-        sendEvent(name: "status", value: "Error ${e.message}")    
+        sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true)    
         log.warn "${device} Error: ${e.message}" 
     }
 }
@@ -285,13 +337,28 @@ def updated () {
 
 
 def refresh() {
-    log.info "${device}: refresh"
-	state.tryPresence = state.tryPresence + 1
     
+    log.info "${device}: refresh "
+	state.tryPresence = state.tryPresence + 1
+// cleanup temp var
+
+    state.remove("gpioSwitch")
+    state.remove("gpioState")
+    sendEvent(name: "pushed", value: "")
+// 
+
+    if (state.tryPresence > 1){
+       if (state.tryPresence < 4){ 
+        if (device.currentValue('presence') == "present") {
+        log.info "${device}: Failed presence ${state.tryPresence} Times. Give up on 4th"   
+    }
+  }
+ }
     if (state.tryPresence > 3){
         if (device.currentValue('presence') == "present") {
-         sendEvent(name: "presence", value: "not present")   
-         log.info "${device}: is OFFLINE"   
+         sendEvent(name: "presence", value: "not present")
+         sendEvent(name: "status", value: "error", descriptionText: "Ill Be Back Later", displayed: true)   
+         log.warn "${device}: is OFFLINE  Tried ${state.tryPresence} Times"   
         } 
     }
     
@@ -313,12 +380,11 @@ def httpGetPresence(response, data) {
 		state.tryPresence = 0
 		
 		if (device.currentValue('presence') == "not present") {
-           sendEvent(name: "presence", value: "present")   
-           log.info "${device}: is Present"   
+           sendEvent(name: "presence", value: "present") 
+           sendEvent(name: "status", value: "ok", descriptionText: "Im Back", displayed: true)  
+           log.info "${device}: is Present and Online"   
          } 
-//        else {
-//        log.warn "${device}: Presence failed ${state.tryPresence} Tries"
-//        }
+
    }
 }
 
