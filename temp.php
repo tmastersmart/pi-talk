@@ -29,10 +29,10 @@
 // 
 // Install MAKER API first then give device permission
 // =====================settings================================
-$hub="192.168.0.13";
-$maker="282";// device of maker api
-$token = "0ba48ca1-f585-41b7-bfd4-2f9b7a134ed5";
-$device ="814"; // Which device to post to
+$hub="192.168.0.xx";
+$maker="";// device of maker api
+$token = "";
+$device =""; // Which device to post to
 
 //===============================================================
 
