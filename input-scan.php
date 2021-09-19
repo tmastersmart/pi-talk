@@ -80,6 +80,4 @@ while (list($key, $value) = each($HTTP_GET_VARS)) {
   $i++;
   $format="POST $i fields";
 }
-
-
 ?>
