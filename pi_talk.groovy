@@ -7,6 +7,7 @@ Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,buton,Presence,Temp,Volts
 
 Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
+v2.3  09-18-2021 Alarm from Pi added
 v2.2  09-17-2021 Log / Display improvments,Temp Volts Model 
 v2.1  09-16-2021 Button code changed
 v2.0  09-15-2021 Presence Sensor added. Switch removed due to OFF conflice with Strobe
@@ -58,6 +59,7 @@ metadata {
         command "setTemperature", ["Number"]
         command "setVolts", ["Number"]
         command "setMemory", ["Number"]
+        command "setAlarm", ["Number"]
 
         attribute "Temperature", "string"
         attribute "volts", "string"
@@ -82,6 +84,13 @@ metadata {
 
     }              
 }
+
+def setAlarm(st) {
+    log.info "${device.displayName} PI sent Alarm ${st}"    
+    sendEvent(name: "alarm", value: st, descriptionText: "Custom alarm from PI")    
+   
+}
+
 
 def setModel(version) {
     log.info "${device.displayName} Model is ${version}"    
