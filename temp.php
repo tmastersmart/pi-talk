@@ -23,7 +23,7 @@
 // place php files in /var/www/html/
 // 
 // talk.php <-- this reveives commands from HUB
-// temp-post.php <-- this file post to HUB
+// temp.php <-- this file post to HUB
 // input-scan.php <-- Safe loading of get and post
 // talk.sh  <-- this runs in a loop to take action
 // temp-chart.sh <-- Draws a png temp chart in /images 
