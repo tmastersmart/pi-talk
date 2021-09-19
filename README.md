@@ -89,9 +89,13 @@ Play outside alarms. Webadmin is what I use to ciontrol it. https://www.webmin.c
 
 Add log rotations for
 
-/var/www/html/talk.log  <-daily or weakly
-/var/www/html/temp.log  <-daily or weakly
-/var/www/html/teml.dat  <-daily 
+/var/log/temp.log  <-daily
+/var/log/temp.dat  <-daily 
+
+Log rotation does not work with files created by PHP under the webserver
+but does work with files created by PHP using chron so the PHP script will
+rotate its own log at /var/www/html/talk.log  This is easer than trying to debug 
+a permission problem on everyones PI with diffrent webservers.  
 
 Add Chron for (its very easy on webmin)
 
@@ -126,6 +130,11 @@ Button 4 turns off 2
 Button 5 Pushes 3 and a delay on the PI turns it back off
 
 
+temp.php
+needs to be edited to include your token for maker API.
+The device# for the driver and the device# for the maker
+
+
 Planned: I need a way to notify my hub when events on the PI happen.
 I also need to buy a relay board so I can work on the GPIO button options.
 And I need to have seymour flags to interact with external scripts. 
@@ -135,4 +144,3 @@ So far I have no ideal if anyone else is even intrested. Im basicaly building th
 myself right now. Once this is working if no one is intrested updates will only be internal.
 
 http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
-http://pws.winnfreenet.com/donate.php
