@@ -8,11 +8,15 @@
 #  /var/www/html/images/temp.png
 #  http://127.0.0.1/images/temp.png
 # 
+#  v1.1 09-18-2021 Log file moved 
 #  v1.0 09-17-2021 First version Manual setup
 #
 #  needs sudo apt-get -y install gnuplot
 #   
 #     place .sh files in /home/pi
+#     
+#     We read from /var/log/hub-temp.dat  with root permissions
+#     This file must be log rotated daily for proper charts
 #----------------------------------------------------------------
 #// you need to install these files on your pi 
 #// place php files in /var/www/html/
@@ -47,5 +51,5 @@ set xlabel "Time"
 
 set grid
 
-plot '/var/www/html/temp.dat' using 1:2 with line
+plot '/var/log/hub-temp.dat' using 1:2 with line
 EOF
