@@ -6,6 +6,7 @@
 //   
 //  PI Temp and voltage post back tp PI controler
 //  
+//  v1.1 09-18-2021 Log file moved 
 //  v1.0 09-17-2021 First version Manual setup
 //   
 // ---------------------------------------------------
@@ -26,10 +27,11 @@
 // ------------------------------------------------------------
 // This script is to be run from chron as
 // php /var/www/html/temp.php 
+// Logs are created with root permissions outside WWW
 // 
 // Install MAKER API first then give device permission
 // =====================settings================================
-$hub="192.168.0.xx";
+$hub="192.168.0.";
 $maker="";// device of maker api
 $token = "";
 $device =""; // Which device to post to
@@ -38,18 +40,19 @@ $device =""; // Which device to post to
 
 
 
-   $log ="/var/www/html/temp.log";// Set log rotation on this file weekly
-$tempLog="/var/www/html/temp.dat";// Set log rotation on this file daily
+   $log ="/var/log/hub-temp.log";// Set log rotation on this file daily
+$tempLog="/var/log/hub-temp.dat";// Set log rotation on this file daily
+$store  ="/var/www/html/data.txt";
 $setmodel=false;
 $setonce="/var/www/html/set.dat";if(file_exists($setonce)) {$setmodel=true;}
-$tempSensor="/opt/vc/bin/vcgencmd measure_temp >/var/www/html/data.txt";
-$voltSensor="/opt/vc/bin/vcgencmd measure_volts >>/var/www/html/data.txt";
-$versSensor="gpio -v >/var/www/html/set.txt";
+$tempSensor="/opt/vc/bin/vcgencmd measure_temp >$store";
+$voltSensor="/opt/vc/bin/vcgencmd measure_volts >>$store";
+
 exec($tempSensor, $tempIN, $return_var );
 exec($voltSensor, $voltIN, $return_var );
 
 
-$input = file("/var/www/html/data.txt");
+$input = file($store);
 $volt ="";$temp="";$ver="";$pos1="";$pos2="";$pos3="";$html="";$error="ok";$memory="";
 $i=0;
 foreach ($input as $item) {
@@ -86,10 +89,10 @@ $MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supporte
 // Erase set.dat to rerun
 
 if (!$setmodel){
-
+$versSensor="gpio -v >$setonce";
 exec($versSensor, $PIversion, $return_var );
 
-$input = file("/var/www/html/set.txt");
+$input = file($setonce);
 $volt ="";$temp="";$ver="";$pos1="";$pos2="";$pos3="";$html="";$error="ok";$memory="";
 $i=0;
 foreach ($input as $item) {
@@ -138,6 +141,8 @@ $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$stat
 // save the temp log for charting with gnuplot in format 00:00 39.7
 $time=date('H:i');
 $fileOUT = fopen($tempLog, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$time $temp\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
+
+unlink($store); // Cleanup
 
 
 function http_request(
