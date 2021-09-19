@@ -5,6 +5,7 @@
 //  https://github.com/tmastersmart/pi-talk
 //   
 //  Pi talk,Chime, Siren,media,button
+//  v2.9 9-18-2021 Internal log Rotation 
 //  v2.8 9-17-2021 
 //  v2.7 9-16-2021 server.txt file added
 //  v2.6 9-15-2021 
@@ -32,6 +33,14 @@
 //https://github.com/tmastersmart/pi-talk
 //----------------------------------------------------
 
+$server ="/var/www/html/server.txt"; 
+$log    ="/var/www/html/talk.log";
+$backup= "/var/www/html/talk-1.log";
+$cmd1   ="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
+$cmd2   ="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
+$cmd3   ="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
+$logSize= 30000;
+
 
 include "input-scan.php";
 for ($i=0; $i < sizeof($fieldNames); $i++) {
@@ -48,11 +57,7 @@ if ($fieldNames[$i] == 'button')  {$button= $fieldValues[$i]; }
 if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
 if (!$voice){$voice="+f4";}// f4 works better than F1
 
-$server ="/var/www/html/server.txt"; 
-$log ="/var/www/html/talk.log"; 
-$cmd1="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
-$cmd2="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
-$cmd3="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
+
 $return_var =""; $ok= false; $header = true;// set 404 error
 
 if($talk){
@@ -116,10 +121,19 @@ if ($header){
     $return_var= "404 Not Found  $return_var";
    }
 
+
+// Log rotation does not like the permisions in WWW directory so doing it by php
+$size= filesize($log); 
+ if($size >= $logSize){
+  if (file_exists($backup)) {unlink ($backup);}if (file_exists($backup)){$return_var="$return_var Error Del $backup";}
+ rename ($log, $backup); if (file_exists($log)){$return_var="$return_var Error Renam $log";}
+ if (!file_exists($log)){ $size=0;$return_var="$return_var Log Rotated";}
+}
+
+// Save the log
 $datum = date('[Y-m-d H:i:s]'); 
-$status = "$datum : Message:$talk From:$code $device status:$format $return_var";
+$status = "$datum : Message:$talk From:$code $device status:$format $return_var Size:$size";
 print $status;
-// save the log
 $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$status\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 
 // save server info 
@@ -128,5 +142,7 @@ $send="gpio -v >>$server";exec($send, $output, $return_var );
 $send="gpio readall >>$server";exec($send, $output, $return_var ); 
 $send="gpio allreadall >>$server";exec($send, $output, $return_var ); 
 }
+ 
+
 
 
