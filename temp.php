@@ -4,20 +4,11 @@
 //  Permission granted to install and use wuith hubitat for free   
 //  https://github.com/tmastersmart/pi-talk
 //   
-//  Pi talk,Chime, Siren,media,button
-//  v2.9 9-18-2021 Internal log Rotation 
-//  v2.8 9-17-2021 
-//  v2.7 9-16-2021 server.txt file added
-//  v2.6 9-15-2021 
-//  v2.5 9/13/2021 GPIO added
-//  v2.4 9/11/2021 
-//  v2.3 9/11/2021
-//  v2.2 9/10/2021
-//  v2.1 9/10/2021
-//  v2.0 9/09/2021
+//  PI Temp and voltage post back tp PI controler
 //  
-//  
-//  
+//  v1.1 09-18-2021 Log file moved 
+//  v1.0 09-17-2021 First version Manual setup
+//   
 // ---------------------------------------------------
 // you need to install these files on your pi 
 // place php files in /var/www/html/
@@ -32,117 +23,274 @@
 //
 //https://github.com/tmastersmart/pi-talk
 //----------------------------------------------------
+//  
+// ------------------------------------------------------------
+// This script is to be run from chron as
+// php /var/www/html/temp.php 
+// Logs are created with root permissions outside WWW
+// 
+// Install MAKER API first then give device permission
+// =====================settings================================
+$hub="192.168.0.xx";
+$maker="0";// device of maker api
+$token = "000your0token0here";
+$device ="0"; // Which device to post to
 
-$server ="/var/www/html/server.txt"; 
-$log    ="/var/www/html/talk.log";
-$backup= "/var/www/html/talk-1.log";
-$cmd1   ="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
-$cmd2   ="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
-$cmd3   ="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
-$logSize= 30000;
+//===============================================================
 
 
-include "input-scan.php";
-for ($i=0; $i < sizeof($fieldNames); $i++) {
-if ($fieldNames[$i] == 'talk')    {  $talk= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'device')  {$device= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'code')    {  $code= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'voice')   { $voice= $fieldValues[$i]; } 
-if ($fieldNames[$i] == 'lang')    {  $lang= $fieldValues[$i]; }                                   
-if ($fieldNames[$i] == 'play')    {  $play= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'gpio')    {  $gpio= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'switch')  {$switch= $fieldValues[$i]; }
-if ($fieldNames[$i] == 'button')  {$button= $fieldValues[$i]; }
+
+   $log ="/var/log/hub-temp.log";// Set log rotation on this file daily
+$tempLog="/var/log/hub-temp.dat";// Set log rotation on this file daily
+$store  ="/var/www/html/data.txt";
+$setmodel=false;
+$setonce="/var/www/html/set.dat";if(file_exists($setonce)) {$setmodel=true;}
+$tempSensor="/opt/vc/bin/vcgencmd measure_temp >$store";
+$voltSensor="/opt/vc/bin/vcgencmd measure_volts >>$store";
+
+exec($tempSensor, $tempIN, $return_var );
+exec($voltSensor, $voltIN, $return_var );
+
+
+$input = file($store);
+$volt ="";$temp="";$ver="";$pos1="";$pos2="";$pos3="";$html="";$error="ok";$memory="";
+$i=0;
+foreach ($input as $item) {
+$pos1 = strpos($item ,"emp=");if($pos1){$test=$item;$Lpos = strpos($test, '=');$Rpos = strpos($test, "'");$temp = substr($test, $Lpos+1,$Rpos-$Lpos-1);}
+$pos2 = strpos($item ,"olt=");if($pos2){$test=$item;$Lpos = strpos($test, '=');$Rpos = strpos($test, 'v');$volt = substr($test, $Lpos+1,$Rpos-$Lpos-1);}
+
+$i++;
 }
-if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
-if (!$voice){$voice="+f4";}// f4 works better than F1
+//  Type: Pi 3, Revision: 02, Memory: 1024MB, Maker: Embest 
 
 
-$return_var =""; $ok= false; $header = true;// set 404 error
 
-if($talk){
- $fileOUT = fopen($cmd1, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$talk") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
- $fileOUT = fopen($cmd2, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$lang$voice") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
- $header= false;
-}
-
-if($play){
-  if(file_exists("/home/pi/$play.wav"))  { $ok=true; $play="/home/pi/$play.wav";}
-  if(file_exists("/home/pi/$play.mp3"))  { $ok=true; $play="/home/pi/$play.mp3";}
-  if(file_exists("/home/pi/Music/$play.wav"))  { $ok=true; $play="/home/pi/Music/$play.wav";}
-  if(file_exists("/home/pi/Music/$play.mp3"))  { $ok=true; $play="/home/pi/Music/$play.mp3";}
- $talk="(Play $play)";
-  if($ok){
-        $fileOUT = fopen($cmd3, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$play") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
-        $header=false;
-       }
-}
-
-if($gpio){
-   $header=true;$ok=false; 
-// at this time I dont have a safe list of GPIOs
-// https://elinux.org/RPi_Low-level_peripherals
-
- if($gpio == "7") { $ok=true; }//
- if($gpio == "8") { $ok=true; }//
- if($gpio == "9") { $ok=true; }//
- if($gpio == "10"){ $ok=true; } // 
- if($gpio == "11"){ $ok=true; } //
- if($gpio == "14"){ $ok=true; } // 
- if($gpio == "15"){ $ok=true; } // 
- if($gpio == "17"){ $ok=true; }// 
- if($gpio == "18"){ $ok=true; }//
- if($gpio == "22"){ $ok=true; }// 
- if($gpio == "23"){ $ok=true; }//
- if($gpio == "24"){ $ok=true; }// 
- if($gpio == "25"){ $ok=true; }// 
-
-
- $talk="GPIO $gpio $switch"; // tell the log what we are doing
- //  1on 2off 3press
- if($ok){
-     $send="gpio-g mode $gpio out";    exec($send, $output, $return_var );
-      if ($switch==0){$send="gpio-g write $gpio 0";exec($send, $output, $return_var );}
-      if ($switch==1){$send="gpio-g write $gpio 1";exec($send, $output, $return_var );} 
-      if ($switch==2){ 
-      $send="gpio-g write $gpio 1";exec($send, $output, $return_var ); 
-      sleep(3);
-      $send="gpio-g write $gpio 0";exec($send, $output, $return_var ); 
-     }
-    // $return_var returning 127 after post
-    $header= false; $return_var = "Button = $button";
- }
-}
-
-
-if ($header){
-    header("HTTP/1.1 404 Not Found");
-    header("Status: 404 Not Found");
-    $return_var= "404 Not Found  $return_var";
-   }
-
-
-// Log rotation does not like the permisions in WWW directory so doing it by php
-$size= filesize($log); 
- if($size >= $logSize){
-  if (file_exists($backup)) {unlink ($backup);}if (file_exists($backup)){$return_var="$return_var Error Del $backup";}
- rename ($log, $backup); if (file_exists($log)){$return_var="$return_var Error Renam $log";}
- if (!file_exists($log)){ $size=0;$return_var="$return_var Log Rotated";}
-}
-
-// Save the log
 $datum = date('[Y-m-d H:i:s]'); 
-$status = "$datum : Message:$talk From:$code $device status:$format $return_var Size:$size";
+
+
+$ip  = $hub;
+$url = "/apps/api/$maker/devices/$device/setTemperature/$temp?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="505 Not Supported";}
+
+
+$url = "/apps/api/$maker/devices/$device/setVolts/$volt?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+$hub="192.168.0.11";
+$maker="358";// device of maker api
+$token = "2a2fca27-ad59-4ee8-91a6-8cf56ad81a3a";
+$device ="509"; // Which device to post t
+
+$ip  = $hub;
+$url = "/apps/api/$maker/devices/$device/setTemperature/$temp?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="505 Not Supported";}
+
+
+$url = "/apps/api/$maker/devices/$device/setVolts/$volt?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+
+
+$hub="192.168.0.13";
+$maker="282";// device of maker api
+$token = "0ba48ca1-f585-41b7-bfd4-2f9b7a134ed5";
+$device ="814"; // Which device to post to
+
+
+// we only post this one time
+// Erase set.dat to rerun
+
+if (!$setmodel){
+$versSensor="gpio -v >$setonce";
+exec($versSensor, $PIversion, $return_var );
+
+$input = file($setonce);
+$volt ="";$temp="";$ver="";$pos1="";$pos2="";$pos3="";$html="";$error="ok";$memory="";
+$i=0;
+foreach ($input as $item) {
+$pos3 = strpos($item ,"*-->");if($pos3){$test = substr($item, ($pos3),60);$Lpos = strpos($test, '>');$Rpos = strpos($test, chr(10));$ver = substr($test, $Lpos+2,$Rpos-$Lpos-1);}
+$pos4 = strpos($item ,"Memory");if($pos4){$test = substr($item, ($pos4),60);$Lpos = strpos($test, ':');$Rpos = strpos($test, ",");$memory = substr($test, $Lpos+2,$Rpos-$Lpos-2);}
+
+$i++;
+}
+
+
+
+
+$ver = str_replace(chr(13), "", $ver);
+$ver = str_replace(chr(10), "", $ver);
+$logSave="$ver,$memory";
+$ver = str_replace(" ", "%20", $ver);
+$ip=$hub;
+$url = "/apps/api/$maker/devices/$device/setMemory/$memory?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+$url = "/apps/api/$maker/devices/$device/setModel/$ver?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+
+
+$hub="192.168.0.11";
+$maker="358";// device of maker api
+$token = "2a2fca27-ad59-4ee8-91a6-8cf56ad81a3a";
+$device ="509"; // Which device to post t
+
+$ip=$hub;
+$url = "/apps/api/$maker/devices/$device/setMemory/$memory?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+$url = "/apps/api/$maker/devices/$device/setModel/$ver?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+
+
+
+
+
+
+
+$fileOUT = fopen($setonce, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$logSave\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
+
+}
+
+$datum = date('[Y-m-d H:i:s]'); 
+
+// Build a log
+$status = "$datum : Volts:$volt Temp:$temp";
+if ($memory){ $status="$status Memory:$memory";}
+if ($ver)   {$ver = str_replace("%20"," ", $ver); $status="$status Model:$ver";}
+$status = "$status ST:$error";
 print $status;
+// save the log
 $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$status\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 
-// save server info 
-if(!file_exists($server))  { 
-$send="gpio -v >>$server";exec($send, $output, $return_var ); 
-$send="gpio readall >>$server";exec($send, $output, $return_var ); 
-$send="gpio allreadall >>$server";exec($send, $output, $return_var ); 
+// save the temp log for charting with gnuplot in format 00:00 39.7
+$time=date('H:i');
+$fileOUT = fopen($tempLog, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$time $temp\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
+
+unlink($store); // Cleanup
+
+
+function http_request(
+    $verb = 'GET',             /* HTTP Request Method (GET and POST supported) */
+    $ip,                       /* Target IP/Hostname */
+    $port = 80,                /* Target TCP port */
+    $uri = '/',                /* Target URI */
+    $getdata = array(),        /* HTTP GET Data ie. array('var1' => 'val1', 'var2' => 'val2') */
+    $postdata = array(),       /* HTTP POST Data ie. array('var1' => 'val1', 'var2' => 'val2') */
+    $cookie = array(),         /* HTTP Cookie Data ie. array('var1' => 'val1', 'var2' => 'val2') */
+    $custom_headers = array(), /* Custom HTTP headers ie. array('Referer: http://localhost/ */
+    $timeout = 5000,           /* Socket timeout in milliseconds */
+    $req_hdr = false,          /* Include HTTP request headers */
+    $res_hdr = false           /* Include HTTP response headers */
+    )
+{
+global $BasicA,$agent,$version,$getheader,$htmlON,$responceHeader,$Postit,$req,$exede,$exedeCookie1,$exedeCookie2;
+
+ $postdata_str="";
+    if(!$agent){$agent="pi";}
+
+    if($Postit) {$postdata=$Postit;}
+
+    if ($getheader){$res_hdr = true; }
+    $ret = '';
+    $verb = strtoupper($verb);
+    $cookie_str = '';
+    $getdata_str = count($getdata) ? '?' : '';
+//    $postdata_str = '';
+if (!$postdata_str){$postdata_str = '';}
+
+    foreach ($getdata as $k => $v)
+        $getdata_str .= urlencode($k) .'='. urlencode($v).'&';
+
+    foreach ($postdata as $k => $v)
+        $postdata_str .= urlencode($k) .'='. urlencode($v) .'&';
+
+    foreach ($cookie as $k => $v)
+        $cookie_str .= urlencode($k) .'='. urlencode($v) .'; ';
+
+    $crlf = "\r\n";
+//    $req = $verb .' '. $uri . $getdata_str .' HTTP/1.1' . $crlf;
+
+    $req = $verb .' '. $uri .' HTTP/1.1' . $crlf;
+    $req .= 'Host: '. $ip . $crlf;
+    $req .= 'Connection: close' . $crlf;
+    $req .= 'User-Agent: Mozilla/5.0 '. $agent . $crlf;
+if ($BasicA){$req .= 'Authorization: Basic '. $BasicA . $crlf;}    $req .= 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' . $crlf;
+    $req .= 'Accept-Language: en-us,en;q=0.5' . $crlf;
+//    $req .= 'Accept-Encoding: deflate' . $crlf;
+    $req .= 'Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7' . $crlf;
+
+    foreach ($custom_headers as $k => $v)
+        $req .= $k .': '. $v . $crlf;
+
+    if (!empty($cookie_str))
+        $req .= 'Cookie: '. substr($cookie_str, 0, -2) . $crlf;
+
+    if ($exede){
+       $req .= "Cookie: _ga=$exedeCookie1" . $crlf;
+       $req .= "Cookie: _mkto_trk=$exedeCookie2" . $crlf;
+    }
+
+    if ($verb == 'POST' && !empty($postdata_str))
+    {
+        $postdata_str = substr($postdata_str, 0, -1);
+        $req .= 'Content-Type: application/x-www-form-urlencoded' . $crlf;
+        $req .= 'Content-Length: '. strlen($postdata_str) . $crlf . $crlf;
+        $req .= $postdata_str;
+    }
+    else $req .= $crlf;
+
+    if ($req_hdr)
+        $ret .= $req;
+
+    if (($fp = @fsockopen($ip, $port, $errno, $errstr)) == false){
+    if ($errno=10060){$errstr="Timed Out";}
+    return " error! $errno: $errstr";
+    }
+    fputs($fp, $req); //print "$req
+
+    stream_set_timeout($fp, 0, $timeout * 1000);
+        $ret = fgets($fp); $responceHeader =$ret; // gets responce header
+// if is a webpage stop loading at the /html Prevents looping.
+ while ($line = fgets($fp)) {
+    $ret .= $line;
+    if($htmlON) {$EndOfLine = strpos($line, '/html>'); if ($EndOfLine) { break;}}
+  }
+    fclose($fp);
+    if (!$res_hdr){ $ret = substr($ret, strpos($ret, "\r\n\r\n") + 4);}
+    return $ret;
 }
- 
-
-
 
