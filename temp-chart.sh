@@ -7,7 +7,8 @@
 #   Creats a png image of your temp data at 
 #  /var/www/html/images/temp.png
 #  http://127.0.0.1/images/temp.png
-# 
+#
+#  v1.2 09-22-2021 Log moved
 #  v1.1 09-18-2021 Log file moved 
 #  v1.0 09-17-2021 First version Manual setup
 #
@@ -23,6 +24,7 @@
 #// 
 #// talk.php <-- this reveives commands from HUB
 #// temp.php <-- this file post to HUB
+#// temp-rotate.php <-- Log rotation by chron
 #// input-scan.php <-- Safe loading of get and post
 #// talk.sh  <-- this runs in a loop to take action
 #// temp-chart.sh <-- Draws a png temp chart in /images 
@@ -51,5 +53,5 @@ set xlabel "Time"
 
 set grid
 
-plot '/var/log/hub-temp.dat' using 1:2 with line
+plot '/var/www/html/hub-temp.dat' using 1:2 with line
 EOF
