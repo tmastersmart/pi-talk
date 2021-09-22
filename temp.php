@@ -1,7 +1,7 @@
 <?php
 //  ------------------------------------------------------------
 //  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
-//  Permission granted to install and use with hubitat for free   
+//  Permission granted to install and use wuith hubitat for free   
 //  https://github.com/tmastersmart/pi-talk
 //   
 //  PI Temp and voltage post back tp PI controler
@@ -31,12 +31,12 @@
 // 
 // Install MAKER API first then give device permission
 // =====================settings================================
-$hub="192.168.0.xx";
-$maker="0";// device of maker api
-$token = "000your0token0here";
-$device ="0"; // Which device to post to
 
-//===============================================================
+
+$hub="192.168.0.";
+$maker="";// device of maker api
+$token = "";
+$device ="61"; // Which device to post to
 
 
 
@@ -64,10 +64,10 @@ $i++;
 //  Type: Pi 3, Revision: 02, Memory: 1024MB, Maker: Embest 
 
 
-
-$datum = date('[Y-m-d H:i:s]'); 
-
-
+$ver = str_replace(chr(13), "", $ver);
+$ver = str_replace(chr(10), "", $ver);
+$logSave="$ver,$memory";
+$ver = str_replace(" ", "%20", $ver);
 $ip  = $hub;
 $url = "/apps/api/$maker/devices/$device/setTemperature/$temp?access_token=$token";
 $getheader = true; $htmlON=false;
@@ -83,34 +83,6 @@ $html = http_request('GET', $ip, 80 , "$url");
 $MS_Error ="";
 $MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
 $MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-$hub="192.168.0.11";
-$maker="358";// device of maker api
-$token = "2a2fca27-ad59-4ee8-91a6-8cf56ad81a3a";
-$device ="509"; // Which device to post t
-
-$ip  = $hub;
-$url = "/apps/api/$maker/devices/$device/setTemperature/$temp?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="505 Not Supported";}
-
-
-$url = "/apps/api/$maker/devices/$device/setVolts/$volt?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-
-
-$hub="192.168.0.13";
-$maker="282";// device of maker api
-$token = "0ba48ca1-f585-41b7-bfd4-2f9b7a134ed5";
-$device ="814"; // Which device to post to
 
 
 // we only post this one time
@@ -129,61 +101,9 @@ $pos4 = strpos($item ,"Memory");if($pos4){$test = substr($item, ($pos4),60);$Lpo
 
 $i++;
 }
-
-
-
-
-$ver = str_replace(chr(13), "", $ver);
-$ver = str_replace(chr(10), "", $ver);
-$logSave="$ver,$memory";
-$ver = str_replace(" ", "%20", $ver);
-$ip=$hub;
-$url = "/apps/api/$maker/devices/$device/setMemory/$memory?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-$url = "/apps/api/$maker/devices/$device/setModel/$ver?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-
-
-$hub="192.168.0.11";
-$maker="358";// device of maker api
-$token = "2a2fca27-ad59-4ee8-91a6-8cf56ad81a3a";
-$device ="509"; // Which device to post t
-
-$ip=$hub;
-$url = "/apps/api/$maker/devices/$device/setMemory/$memory?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-$url = "/apps/api/$maker/devices/$device/setModel/$ver?access_token=$token";
-$getheader = true; $htmlON=false;
-$html = http_request('GET', $ip, 80 , "$url");
-$MS_Error ="";
-$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
-$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
-
-
-
-
-
-
-
-
-$fileOUT = fopen($setonce, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$logSave\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
-
 }
+
+
 
 $datum = date('[Y-m-d H:i:s]'); 
 
