@@ -1,7 +1,7 @@
 <?php
 //  ------------------------------------------------------------
 //  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
-//  Permission granted to install and use wuith hubitat for free   
+//  Permission granted to install and use with hubitat for free   
 //  https://github.com/tmastersmart/pi-talk
 //   
 //  PI Temp and voltage post back tp PI controler
