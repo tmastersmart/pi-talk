@@ -4,9 +4,23 @@ Hubitat driver to connect to rasbery pi and talk
 capability 
 Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,buton,Presence,Temp,Volts
 =====================================================================================
-
 Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
+        _        _            _            _                   _             _        
+        /\ \     /\ \         /\ \         / /\                _\ \          /\_\      
+       /  \ \    \ \ \        \_\ \       / /  \              /\__ \        / / /  _   
+      / /\ \ \   /\ \_\       /\__ \     / / /\ \            / /_ \_\      / / /  /\_\ 
+     / / /\ \_\ / /\/_/      / /_ \ \   / / /\ \ \          / / /\/_/     / / /__/ / / 
+    / / /_/ / // / /        / / /\ \ \ / / /  \ \ \        / / /         / /\_____/ /  
+   / / /__\/ // / /        / / /  \/_// / /___/ /\ \      / / /         / /\_______/   
+  / / /_____// / /        / / /      / / /_____/ /\ \    / / / ____    / / /\ \ \      
+ / / /   ___/ / /__      / / /      / /_________/\ \ \  / /_/_/ ___/\ / / /  \ \ \     
+/ / /   /\__\/_/___\    /_/ /      / / /_       __\ \_\/_______/\__\// / /    \ \ \    
+\/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
+                                                                                       
+
+
+v2.5  09-21-2021 Presence fixed Default was not getting setup
 v2.4  09-19-2021 AlarmIN created 
 v2.3  09-18-2021 Alarm from Pi added
 v2.2  09-17-2021 Log / Display improvments,Temp Volts Model 
@@ -109,17 +123,15 @@ def setVolts(coreVolts) {
 }
 
 def setTemperature(temp) {
-
 //    log.info "${device.displayName} PI Core Temp is ${temp}c"
     sendEvent(name: "temperature", value: temp, descriptionText: "Core Temp", unit: "c")
     
-// This Overides any not present
-    state.tryPresence = 0
-  		   if (device.currentValue('presence') == "not present") {
-           sendEvent(name: "presence", value: "present") 
-           sendEvent(name: "status", value: "ok", descriptionText: "Temp set Pressence", displayed: true)  
-           log.info "${device}: is Present Set by Temp"   
-         } 
+// This resets the pressence flags
+   if (device.currentValue('presence') != "present") {
+	   sendEvent(name: "presence", value: "present") 
+	   log.info "${device}: presence set by temp report. Im Back. "
+       state.tryPresence = 0
+  }
    
 }
 
@@ -349,7 +361,14 @@ def updated () {
 
 def refresh() {
     
-    log.info "${device}: refresh "
+if (device.currentValue('presence') != "present") {
+   if (device.currentValue('presence') != "not present") {
+	   sendEvent(name: "presence", value: "present") 
+	   log.warn "${device}: presence set to default "
+   }
+}
+	
+   log.info "${device}: refresh "
 	state.tryPresence = state.tryPresence + 1
 // cleanup temp var
 
