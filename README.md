@@ -134,6 +134,8 @@ temp.php
 needs to be edited to include your token for maker API.
 The device# for the driver and the device# for the maker
 
+If you dont want to use the talking or speaker part dont start the talk.sh script 
+
 
 Planned: I need a way to notify my hub when events on the PI happen.
 I also need to buy a relay board so I can work on the GPIO button options.
