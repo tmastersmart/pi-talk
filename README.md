@@ -17,6 +17,7 @@ PI controler. This is written mostly in PHP because I use it everyday on website
 you need to install these files on your pi 
 talk.php <-- this driver talks to this file
 temp.php <-- this file post back to this driver
+temp-rotate.php <-- Log rotator 
 input-scan.php <-- Safe loading of get and post
 talk.sh  <-- this runs in a loop to take action
 temp-chart.sh <-- Draws a png temp chart in /images 
@@ -43,7 +44,7 @@ If you dont have a webserver I recomend installing Pi hole it will set everythin
 This is what I use because its much smaller than apachie. I no longer use apachie on PI
 
  
-launch this script at startup
+launch this script at startup if you want to play sounds
 nohup bash /home/pi/talk.sh > /dev/null 2>&1 
 
 It stays running and loops every 10secs
@@ -83,29 +84,24 @@ if you want to use relays enter the GPIO values   0=disabe
 Enter the sound file you want the siren to play
 
 
-On the PI you need to setup chron and log rotation. I use webmin on all my PI'S 
+On the PI you need to setup chron . I use webmin on all my PI'S 
 The PI I run this on is in my garden connected to a PA system to scare crows and
 Play outside alarms. Webadmin is what I use to ciontrol it. https://www.webmin.com/deb.html
 
-Add log rotations for
-
-/var/log/temp.log  <-daily
-/var/log/temp.dat  <-daily 
-
-Log rotation does not work with files created by PHP under the webserver
-but does work with files created by PHP using chron so the PHP script will
-rotate its own log at /var/www/html/talk.log  This is easer than trying to debug 
-a permission problem on everyones PI with diffrent webservers.  
+Log rotation has permission problems so I wrote my own log lotation script
 
 Add Chron for (its very easy on webmin)
 
 Add chron to start talk.sh at bootup
 Add Chron to for temp.php to run every say 15 mins
 Add Chron for temp-chart.sh to run at the same time as above but 1 min later
+Add Chron for temp-rotate.php at mignight
 
-php /var/html/www/temp.php > /dev/null 2>&1    (start at boot time)
+
+php /var/www/html/temp.php > /dev/null 2>&1    (start at boot time)
 bash /home/pi/takl.sh > /dev/null 2>&1         (every 10 or 15 mins)
-bash /home/pi/temp-chart.php > /dev/null 2>&1  (run 1 min after the above runs) 
+bash /home/pi/temp-chart.php > /dev/null 2>&1  (run 1 min after the above runs)
+php /var/www/html/temp-rotate.php > /dev/null 2>&1 (run at midnight)  
 
 Temp chart will create a file at /var/html/www/images/temp.png
 you can load this from http://127.0.0.1/images/temp.png
@@ -133,8 +129,6 @@ Button 5 Pushes 3 and a delay on the PI turns it back off
 temp.php
 needs to be edited to include your token for maker API.
 The device# for the driver and the device# for the maker
-
-If you dont want to use the talking or speaker part dont start the talk.sh script 
 
 
 Planned: I need a way to notify my hub when events on the PI happen.
