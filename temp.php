@@ -6,6 +6,7 @@
 //   
 //  PI Temp and voltage post back tp PI controler
 //  
+//  v1.2 09-22-2021 Log moved rotation script created
 //  v1.1 09-18-2021 Log file moved 
 //  v1.0 09-17-2021 First version Manual setup
 //   
@@ -15,6 +16,7 @@
 // 
 // talk.php <-- this reveives commands from HUB
 // temp.php <-- this file post to HUB
+// temp-rotate.php <--- run daily by chron
 // input-scan.php <-- Safe loading of get and post
 // talk.sh  <-- this runs in a loop to take action
 // temp-chart.sh <-- Draws a png temp chart in /images 
@@ -40,8 +42,8 @@ $device =""; // Which device to post to
 
 
 
-   $log ="/var/log/hub-temp.log";// Set log rotation on this file daily
-$tempLog="/var/log/hub-temp.dat";// Set log rotation on this file daily
+   $log ="/var/www/html/hub-temp.log";// Set log rotation on this file daily
+$tempLog="/var/www/html/hub-temp.dat";// Set log rotation on this file daily
 $store  ="/var/www/html/data.txt";
 $setmodel=false;
 $setonce="/var/www/html/set.dat";if(file_exists($setonce)) {$setmodel=true;} //set true for normal use
