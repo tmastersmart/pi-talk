@@ -33,10 +33,10 @@
 // =====================settings================================
 
 
-$hub="192.168.0.";
+$hub="192.168.0.xx";
 $maker="";// device of maker api
 $token = "";
-$device ="61"; // Which device to post to
+$device =""; // Which device to post to
 
 
 
@@ -44,7 +44,7 @@ $device ="61"; // Which device to post to
 $tempLog="/var/log/hub-temp.dat";// Set log rotation on this file daily
 $store  ="/var/www/html/data.txt";
 $setmodel=false;
-$setonce="/var/www/html/set.dat";if(file_exists($setonce)) {$setmodel=true;}
+$setonce="/var/www/html/set.dat";if(file_exists($setonce)) {$setmodel=true;} //set true for normal use
 $tempSensor="/opt/vc/bin/vcgencmd measure_temp >$store";
 $voltSensor="/opt/vc/bin/vcgencmd measure_volts >>$store";
 
@@ -64,10 +64,7 @@ $i++;
 //  Type: Pi 3, Revision: 02, Memory: 1024MB, Maker: Embest 
 
 
-$ver = str_replace(chr(13), "", $ver);
-$ver = str_replace(chr(10), "", $ver);
-$logSave="$ver,$memory";
-$ver = str_replace(" ", "%20", $ver);
+
 $ip  = $hub;
 $url = "/apps/api/$maker/devices/$device/setTemperature/$temp?access_token=$token";
 $getheader = true; $htmlON=false;
@@ -101,6 +98,28 @@ $pos4 = strpos($item ,"Memory");if($pos4){$test = substr($item, ($pos4),60);$Lpo
 
 $i++;
 }
+$ver = str_replace(chr(13), "", $ver);
+$ver = str_replace(chr(10), "", $ver);
+$logSave="$ver,$memory";
+$ver = str_replace(" ", "%20", $ver);
+
+$url = "/apps/api/$maker/devices/$device/setMemory/$memory?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+$url = "/apps/api/$maker/devices/$device/setModel/$ver?access_token=$token";
+$getheader = true; $htmlON=false;
+$html = http_request('GET', $ip, 80 , "$url");
+$MS_Error ="";
+$MS_Error = strpos($html, '404'); if ($MS_Error){$error="$error 404 Not Found";}
+$MS_Error = strpos($html, '505'); if ($MS_Error){$error="$error 505 Not Supported";}
+
+
+
+
 }
 
 
