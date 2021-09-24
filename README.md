@@ -49,6 +49,12 @@ nohup bash /home/pi/talk.sh > /dev/null 2>&1
 
 It stays running and loops every 10secs
 
+Its better to install this as a service using webmin than as a startup in chron
+So that you can use systemctl to stop it
+
+sudo cp talk.service /etc/systemd/system && sudo systemctl start talk.service
+sudo systemctl status talk.service
+
 
 http://0.0.0.0/talk.php?talk=test should say test
 
@@ -92,7 +98,7 @@ Log rotation has permission problems so I wrote my own log lotation script
 
 Add Chron for (its very easy on webmin)
 
-Add chron to start talk.sh at bootup
+Add chron to start talk.sh at bootup ( recomend creating a service instead of chron)
 Add Chron to for temp.php to run every say 15 mins
 Add Chron for temp-chart.sh to run at the same time as above but 1 min later
 Add Chron for temp-rotate.php at mignight
