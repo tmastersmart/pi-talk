@@ -1,0 +1,9 @@
+[Unit]
+Description=Hubitat to PI Controler Talk Service
+
+[Service]
+RemainAfterExit=yes
+ExecStart=bash /home/pi/talk.sh
+
+[Install]
+WantedBy=multi-user.target
