@@ -19,7 +19,9 @@ Reads text on the pi or you can play any mp3 file on your pi through pi speakers
 \/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
                                                                                        
 
-
+v2.8  10-14-2021 After routine 5.1 you must now provide a VOL for speak
+v2.7  09-26-2021 Added config for chimes
+v2.6  09-25-2021 OFF forces custom alarmin off
 v2.5  09-21-2021 Presence fixed Default was not getting setup
 v2.4  09-19-2021 AlarmIN created 
 v2.3  09-18-2021 Alarm from Pi added
@@ -91,12 +93,17 @@ metadata {
         input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
         input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
 
-        input("scode", "text", title: "siren", description: "Chime Number or name of file for siren [dont enter.mp3]")
+        input("chime1", "text", title: "Chime 1", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "1",required: true)
+        input("chime2", "text", title: "Chime 2", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "2",required: true)
+        input("chime3", "text", title: "Chime 3", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "3",required: true)
+        input("chime4", "text", title: "Chime 4", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "4",required: true)       
+        
+        input("scode", "text", title: "siren", description: "Name of the Siren file to play [dont enter.mp3]",required: true)
 
 
-        input("gpio1", "text", title: "1st GPIO", description: "Button 1 on Button 2 OFF. number of GPIO (0 disable)",defaultValue: "0")
-        input("gpio2", "text", title: "2nd GPIO", description: "Button 3 on Button 4 OFF. number of GPIO (0 disable)",defaultValue: "0")
-        input("gpio3", "text", title: "3rd GPIO", description: "Button 5 Push on momentary (0 disable)",defaultValue: "0")
+        input("gpio1", "text", title: "1st GPIO", description: "Button 1 on Button 2 OFF. number of GPIO (0 disable)",defaultValue: "0",required: true)
+        input("gpio2", "text", title: "2nd GPIO", description: "Button 3 on Button 4 OFF. number of GPIO (0 disable)",defaultValue: "0",required: true)
+        input("gpio3", "text", title: "3rd GPIO", description: "Button 5 Push on momentary (0 disable)",defaultValue: "0",required: true)
 
     }              
 }
@@ -217,45 +224,62 @@ def off(cmd){
   sendEvent(name: "siren", value: "off", descriptionText: "We were already off", displayed: true)
   sendEvent(name: "strobe", value: "off", descriptionText: "We were already off", displayed: true)
   log.info "${device} :Ignoring OFF command" 
-  sendEvent(name: "status", value: "ok", descriptionText: "im ok", displayed: true)   
+  sendEvent(name: "status", value: "ok", descriptionText: "im ok", displayed: true)
+  sendEvent(name: "alarmin", value: "OFF", descriptionText: "forcing off")   
 }
 
 def siren(cmd){
-  playSound(scode)
+  playMP3(scode)
   log.info "${device} :siren"
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off") 
 }
 def strobe(cmd){
-  playSound(scode)
+  playMP3(scode)
   log.info "${device} :strobe"
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off")  
 }
 def both(cmd){
-  playSound(scode)
+  playMP3(scode)
   log.info "${device} :siren / strobe"
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off")   
 }
+
+
+// PlaySound is the chime - numbers
 def playSound(soundnumber){
+   log.info "${device} :Chime  ${soundnumber}" 
+   sendEvent(name: "chime", value: "${soundnumber}") 
+    if (soundnumber== 1){ soundnumber = chime1}
+    if (soundnumber== 2){ soundnumber = chime2}
+    if (soundnumber== 3){ soundnumber = chime3}
+    if (soundnumber== 4){ soundnumber = chime4}
+// any other # will get passed as a filename 5.mp3
+    playMP3(soundnumber)
+}
+
+
+// Custom MP3 routine
+def playMP3(soundname){
     def params = [
             uri: "${url}",
-        query: ["play": "${soundnumber}","code": "${code}","dev": "${device.deviceId}",]
+        query: ["play": "${soundname}","code": "${code}","dev": "${device.deviceId}",]
     ]
 	
-   log.info "${device} :Playing File: ${url}?play=${soundnumber}"    
-   sendEvent(name: "received", value: "${soundnumber}")
+   log.info "${device} :Playing File: ${url}?play=${soundname}"    
+   sendEvent(name: "received", value: "${soundname}")
 
 // improved post    
         try {
         httpPost(params) { resp ->
             if (resp.success) {
                log.info "${device} :Received at pi ok"
-               sendEvent(name: "status", value: "ok", descriptionText: "Playing : ${soundnumber}", displayed: true)
+               sendEvent(name: "status", value: "ok", descriptionText: "Playing : ${soundname}", displayed: true)
             }
             else {log.info "${device} : Received Status ${resp.status}"}
         }
@@ -289,32 +313,32 @@ def stop(ok)        {customError("STOP")}
 
 def restoreTrack(message){
   log.info "${device} :restoreTrack ${message}"  
-  playSound(message)	
+  playMP3(message)	
 }
 
 
 def resumeTrack(message){
   log.info "${device} :resumeTrack ${message}" 
-  playSound(message)	
+  playMP3(message)	
 }
 
 def playTrack(message){
   log.info "${device} :PlayTrack ${message}"  
-  playSound(message)
+  playMP3(message)
 }
                  
 def play(ok){
-    log.info "${device} :Play received Playing 1 default"
+    log.info "${device} :Play Chime 1"
     playSound(1)
 }
 def playText(message){
   deviceNotification(message) 
 }
 
-
-// speach values: [hello, 1, name]
-// need to pull out first varable
-def speak(message) {
+// After v5.1 routine you must provide a vol level
+// Its ignored but must be provided or driver crashes
+def speak(message,volume){
+    log.info "${device} :Speak() msg:${message} VOL:${volume} "
     deviceNotification(message)
 }
 
