@@ -18,7 +18,7 @@ Reads text on the pi or you can play any mp3 file on your pi through pi speakers
 / / /   /\__\/_/___\    /_/ /      / / /_       __\ \_\/_______/\__\// / /    \ \ \    
 \/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
                                                                                        
-
+v2.9  03-30-2022 bug fixed speak was not working if no vol sent
 v2.8  10-14-2021 After routine 5.1 you must now provide a VOL for speak
 v2.7  09-26-2021 Added config for chimes
 v2.6  09-25-2021 OFF forces custom alarmin off
@@ -337,7 +337,8 @@ def playText(message){
 
 // After v5.1 routine you must provide a vol level
 // Its ignored but must be provided or driver crashes
-def speak(message,volume){
+  
+def speak(message, volume=-1, voice="") {    
     log.info "${device} :Speak() msg:${message} VOL:${volume} "
     deviceNotification(message)
 }
