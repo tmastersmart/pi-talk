@@ -5,6 +5,7 @@
 //  https://github.com/tmastersmart/pi-talk
 //   
 //  Pi talk,Chime, Siren,media,button
+//  v3.0 4-10-2021 Default varables fixed
 //  v2.9 9-18-2021 Internal log Rotation 
 //  v2.8 9-17-2021 
 //  v2.7 9-16-2021 server.txt file added
@@ -23,8 +24,7 @@
 // place php files in /var/www/html/
 // 
 // talk.php <-- this reveives commands from HUB
-// temp.php <-- this file post to 
-// temp-rotate.php <-- log rotation by chron
+// temp.php <-- this file post to HUB
 // input-scan.php <-- Safe loading of get and post
 // talk.sh  <-- this runs in a loop to take action
 // temp-chart.sh <-- Draws a png temp chart in /images 
@@ -34,14 +34,18 @@
 //https://github.com/tmastersmart/pi-talk
 //----------------------------------------------------
 
-$server ="/var/www/html/server.txt"; 
+$server ="/var/www/html/server.txt"; // This holds the server info sent to the hub
 $log    ="/var/www/html/talk.log";
 $backup= "/var/www/html/talk-1.log";
 $cmd1   ="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
 $cmd2   ="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
 $cmd3   ="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
 $logSize= 30000;
-
+// set defaults for newer PHP to stop errors
+$talk="";$device="";$code="";$voice="";$play="";$gpio="";$switch="";$button="";$ok="";
+$lang="-ven-us";// english us 'espeak --voices' for list
+$voice="+f4";// f4 works better than F1
+$return_var =""; $ok= false; $header = true;// set 404 error
 
 include "input-scan.php";
 for ($i=0; $i < sizeof($fieldNames); $i++) {
@@ -55,11 +59,7 @@ if ($fieldNames[$i] == 'gpio')    {  $gpio= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'switch')  {$switch= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'button')  {$button= $fieldValues[$i]; }
 }
-if (!$lang) {$lang ="-ven-us";} // english us 'espeak --voices' for list
-if (!$voice){$voice="+f4";}// f4 works better than F1
 
-
-$return_var =""; $ok= false; $header = true;// set 404 error
 
 if($talk){
  $fileOUT = fopen($cmd1, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$talk") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
