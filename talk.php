@@ -1,4 +1,4 @@
-<?php
+           <?php
 //  ------------------------------------------------------------
 //  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
 //  Permission granted to install and use wuith hubitat for free   
@@ -133,7 +133,7 @@ $size= filesize($log);
 
 // Save the log
 $datum = date('[Y-m-d H:i:s]'); 
-$status = "$datum : Message:$talk From:$code $device status:$format $return_var Size:$size";
+$status = "$datum : Message:$talk From:$code $device status: $return_var Size:$size";
 print $status;
 $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$status\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 
