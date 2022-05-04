@@ -9,10 +9,13 @@ Licensed for use on hubitat
 
 
 I created this set of scripts because I could not find one online that would allow to control
-my PI. I want it to talk play musit and I need my hub to monitor when it gets to hot or stops
+my PI. 
+I wanted to talk play music and have my hub to monitor when it gets to hot or stops
 responding. More options are planned. This started out as PI TALK but has changed into a 
-PI controler. This is written mostly in PHP because I use it everyday on websites.  
+PI controler. This is written mostly in PHP.  
 =========================================================================================
+
+Your pi needs a working webserver with PHP installed. 
 
 you need to install these files on your pi 
 talk.php <-- this driver talks to this file
@@ -41,7 +44,7 @@ sudo bash install.sh
 
 You need PHP and a webserver installed. Im sure you know how to do this.
 If you dont have a webserver I recomend installing Pi hole it will set everything up for you and install a dns server.
-This is what I use because its much smaller than apachie. I no longer use apachie on PI
+It installs a small webserver
 
  
 launch this script at startup if you want to play sounds
@@ -82,7 +85,7 @@ Go to the driver set it up.  Maker API is needed if you want to use the temp.php
 enter the following
 url to your pi
 the name of your server
-url to check presence
+url to check presence (your pi webserver index)
 url polling time
 the voice you want to use
 the language dialict you want. on the pi type 'espeak --voices' to get a list
@@ -92,7 +95,7 @@ Enter the sound file you want the siren to play
 
 On the PI you need to setup chron . I use webmin on all my PI'S 
 The PI I run this on is in my garden connected to a PA system to scare crows and
-Play outside alarms. Webadmin is what I use to ciontrol it. https://www.webmin.com/deb.html
+Play outside alarms. Webadmin is what I use to control it. https://www.webmin.com/deb.html
 
 Log rotation has permission problems so I wrote my own log lotation script
 
@@ -105,15 +108,13 @@ Add Chron for temp-rotate.php at mignight
 
 
 php /var/www/html/temp.php > /dev/null 2>&1    (start at boot time)
-bash /home/pi/takl.sh > /dev/null 2>&1         (every 10 or 15 mins)
+bash /home/pi/talk.sh > /dev/null 2>&1         (every 10 or 15 mins)
 bash /home/pi/temp-chart.php > /dev/null 2>&1  (run 1 min after the above runs)
 php /var/www/html/temp-rotate.php > /dev/null 2>&1 (run at midnight)  
 
 Temp chart will create a file at /var/html/www/images/temp.png
 you can load this from http://127.0.0.1/images/temp.png
 I have this on my hub desktop. 
-If you want more charts contact me I draw temp charts for everything on my PI
- 
 
 You may modify espeak command the docs are here
 http://espeak.sourceforge.net/commands.html
