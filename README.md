@@ -9,7 +9,7 @@ Licensed for use on hubitat
 
 
 I created this set of scripts because I could not find one online that would allow to control
-my PI. 
+my PI from Hubitat.
 I wanted to talk play music and have my hub to monitor when it gets to hot or stops
 responding. More options are planned. This started out as PI TALK but has changed into a 
 PI controler. This is written mostly in PHP.  
