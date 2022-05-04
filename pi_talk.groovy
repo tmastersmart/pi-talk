@@ -18,6 +18,7 @@ Reads text on the pi or you can play any mp3 file on your pi through pi speakers
 / / /   /\__\/_/___\    /_/ /      / / /_       __\ \_\/_______/\__\// / /    \ \ \    
 \/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
                                                                                        
+v3.0  05-04-2022 Added mains support flag
 v2.9  03-30-2022 bug fixed speak was not working if no vol sent
 v2.8  10-14-2021 After routine 5.1 you must now provide a VOL for speak
 v2.7  09-26-2021 Added config for chimes
@@ -59,6 +60,17 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
   permission to use on hubiat for free
 * =================================================
 */
+
+def clientVersion() {
+    TheVersion="3.0"
+ if (state.version != TheVersion){ 
+     state.version = TheVersion
+     Refresh() 
+ }
+}
+
+
+
 import java.text.SimpleDateFormat
 metadata {
     definition (name: "PI Talk media GPIO controler", namespace: "tmastersmart", author: "WinnFreeNet.com", importUrl: "https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy") {
@@ -71,13 +83,16 @@ metadata {
         capability "PushableButton"
         capability "Presence Sensor"
         capability "Temperature Measurement"
+        capability "Power Source"
 
         command "setModel", ["string"]
         command "setTemperature", ["Number"]
         command "setVolts", ["Number"]
         command "setMemory", ["string"]
         command "setAlarmIN", ["string"]
-
+        command "unschedule"
+        
+        
         attribute "Temperature", "string"
         attribute "volts", "string"
         attribute "alarmin","string"
@@ -383,40 +398,12 @@ def updated () {
 
 
 
-
+// scheduled for 20 mins.
 def refresh() {
-    
-if (device.currentValue('presence') != "present") {
-   if (device.currentValue('presence') != "not present") {
-	   sendEvent(name: "presence", value: "present") 
-	   log.warn "${device}: presence set to default "
-   }
-}
-	
-   log.info "${device}: refresh "
 	state.tryPresence = state.tryPresence + 1
-// cleanup temp var
-
     state.remove("gpioSwitch")
     state.remove("gpioState")
     sendEvent(name: "pushed", value: "")
-// 
-
-    if (state.tryPresence > 1){
-       if (state.tryPresence < 4){ 
-        if (device.currentValue('presence') == "present") {
-        log.info "${device}: Failed presence ${state.tryPresence} Times. Give up on 4th"   
-    }
-  }
- }
-    if (state.tryPresence > 3){
-        if (device.currentValue('presence') == "present") {
-         sendEvent(name: "presence", value: "not present")
-         sendEvent(name: "status", value: "error", descriptionText: "Ill Be Back Later", displayed: true)   
-         log.warn "${device}: is OFFLINE  Tried ${state.tryPresence} Times"   
-        } 
-    }
-    
     asynchttpGet("httpGetPresence", [uri: url2,timeout: 10]);
 }
 
@@ -428,18 +415,36 @@ def httpGetPresence(response, data) {
 	}
     
     def st = response.getStatus()
-    
-//    log.debug "${device}: Presence check status =${st}"
-
+  
 	if (st == 200) {
 		state.tryPresence = 0
+        log.info "${device}: Presence check status =${st} (OK)"
 		
-		if (device.currentValue('presence') == "not present") {
-           sendEvent(name: "presence", value: "present") 
+		if (device.currentValue('presence') != "present") {
+           sendEvent(name: "presence", value: "present")
+           log.info "${device}: is present" 
            sendEvent(name: "status", value: "ok", descriptionText: "Im Back", displayed: true)  
-           log.info "${device}: is Present and Online"   
-         } 
-
-   }
-}
+ 
+         }
+        
+        if (device.currentValue('powerSource') != "mains") {
+           sendEvent(name: "powerSource", value: "mains", isStateChange: true)
+           log.info "${device}: Power: Mains" 
+        }
+   }// end 200
+    
+    else { 
+        log.info "${device}: Presence check status =${st} Failed:${state.tryPresence} Times."    
+    
+        if (state.tryPresence > 2){
+        if (device.currentValue('presence') == "present") {
+         sendEvent(name: "presence", value: "not present")
+         log.warn "${device}: not present"    
+         sendEvent(name: "powerSource", value: "battery", isStateChange: true)
+         log.info "${device}: Power: OFF"    
+         sendEvent(name: "status", value: "error", descriptionText: "OFFLINE", displayed: true)   
+        } 
+    }
+   }// end else
+}// end get
 
