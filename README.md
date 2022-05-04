@@ -1,6 +1,8 @@
 pi-talk 
 PI hubitat driver controler
 
+Turns Pi inst music player and speach device controled by hubitat
+
 capability Notification,Chime,Alarm,button,switch GPIO
 Reverse connections for temp volts model#
 ----------------------------------------------------------------------------------------
