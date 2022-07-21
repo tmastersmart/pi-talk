@@ -6,6 +6,7 @@
 # Notice OS 11 has major problems unable to install 3 required programs. 
 
 echo "the opt/vc directory must be copied over from a older install. if using OS 11"
+#or see http://dev1galaxy.org/viewtopic.php?id=2967 to build it.
 
 
 # see https://learn.sparkfun.com/tutorials/raspberry-gpio/all  to instakll GPIO
