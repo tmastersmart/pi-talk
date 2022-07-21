@@ -5,6 +5,9 @@
 
 # Notice OS 11 has major problems unable to install 3 required programs. 
 
+# the opt/vc directory must be copied over from a older install.
+
+
 # see https://learn.sparkfun.com/tutorials/raspberry-gpio/all  to instakll GPIO
 git clone https://github.com/WiringPi/WiringPi.git
 cd WiringPi
