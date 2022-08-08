@@ -18,7 +18,7 @@ PI controler. This is written mostly in PHP.
 
 Updates I just updated to Raspbian Linux 11 and many of these preinstalled programs
 are no longer in the OS. breaking this script.
-
+----------------------------------------------------------------------------------------
 Changes..
 You need to install GPIO manualy like this or 
 see https://learn.sparkfun.com/tutorials/raspberry-gpio/all 
