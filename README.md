@@ -17,8 +17,11 @@ responding. More options are planned. This started out as PI TALK but has change
 PI controler. This is written mostly in PHP.  
 =========================================================================================
 
-Updates I just updated to OS 11 and many of these preinstalled programs are no longer in the OS.
-Changes... You need to install GPIO manualy like this or 
+Updates I just updated to Raspbian Linux 11 and many of these preinstalled programs
+are no longer in the OS. breaking this script.
+
+Changes..
+You need to install GPIO manualy like this or 
 see https://learn.sparkfun.com/tutorials/raspberry-gpio/all 
 
 git clone https://github.com/WiringPi/WiringPi.git
@@ -32,7 +35,7 @@ omxplayer is no longer in os 11 and I dont know how to install it. You will need
 copy opt/vc directory from os 10 9 or 7 and create a opt/vc directory  see this page its for zero.
 http://dev1galaxy.org/viewtopic.php?id=2967    I just copied the directory
 
-for older pi os just follow instructions under here
+for older pi Raspbian Linux 10 under just follow instructions under here
 ===================================================================================================
 
 
