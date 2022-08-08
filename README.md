@@ -9,7 +9,6 @@ Reverse connections for temp volts model#
 (c) 2021 by tmastersmart winnfreenet.com
 Licensed for use on hubitat
 
-
 I created this set of scripts because I could not find one online that would allow to control
 my PI from Hubitat.
 I wanted to talk play music and have my hub to monitor when it gets to hot or stops
