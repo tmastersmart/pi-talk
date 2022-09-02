@@ -1,10 +1,11 @@
-           <?php
+<?php
 //  ------------------------------------------------------------
-//  (c) 2021 by tmastersmart winnfreenet.com all rights recerved
+//  (c) 2021/2022 by tmastersmart winnfreenet.com all rights recerved
 //  Permission granted to install and use wuith hubitat for free   
 //  https://github.com/tmastersmart/pi-talk
 //   
 //  Pi talk,Chime, Siren,media,button
+//  v3.1 9- 2-2022 GPIO fix
 //  v3.0 4-10-2021 Default varables fixed
 //  v2.9 9-18-2021 Internal log Rotation 
 //  v2.8 9-17-2021 
@@ -25,6 +26,7 @@
 // 
 // talk.php <-- this reveives commands from HUB
 // temp.php <-- this file post to HUB
+// temp-rotate.php <--- run daily by chron
 // input-scan.php <-- Safe loading of get and post
 // talk.sh  <-- this runs in a loop to take action
 // temp-chart.sh <-- Draws a png temp chart in /images 
@@ -41,11 +43,13 @@ $cmd1   ="/var/www/html/talk1.txt"; if(file_exists($cmd1))  { unlink ($cmd1);}
 $cmd2   ="/var/www/html/talk2.txt"; if(file_exists($cmd2))  { unlink ($cmd2);}
 $cmd3   ="/var/www/html/chime.txt"; if(file_exists($cmd3))  { unlink ($cmd3);}
 $logSize= 30000;
+
 // set defaults for newer PHP to stop errors
 $talk="";$device="";$code="";$voice="";$play="";$gpio="";$switch="";$button="";$ok="";
 $lang="-ven-us";// english us 'espeak --voices' for list
 $voice="+f4";// f4 works better than F1
 $return_var =""; $ok= false; $header = true;// set 404 error
+
 
 include "input-scan.php";
 for ($i=0; $i < sizeof($fieldNames); $i++) {
@@ -60,13 +64,14 @@ if ($fieldNames[$i] == 'switch')  {$switch= $fieldValues[$i]; }
 if ($fieldNames[$i] == 'button')  {$button= $fieldValues[$i]; }
 }
 
-
+// We create a file with what we want to say and the background program will play it
 if($talk){
  $fileOUT = fopen($cmd1, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$talk") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
  $fileOUT = fopen($cmd2, "w") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$lang$voice") ;flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
  $header= false;
 }
 
+// Play a .mp3 file  same as above write the filename into a text file and the monitor will play it
 if($play){
   if(file_exists("/home/pi/$play.wav"))  { $ok=true; $play="/home/pi/$play.wav";}
   if(file_exists("/home/pi/$play.mp3"))  { $ok=true; $play="/home/pi/$play.mp3";}
@@ -101,21 +106,22 @@ if($gpio){
 
  $talk="GPIO $gpio $switch"; // tell the log what we are doing
  //  1on 2off 3press
+// This calls the gpio-g external program may not work with latest os
  if($ok){
-     $send="gpio-g mode $gpio out";    exec($send, $output, $return_var );
-      if ($switch==0){$send="gpio-g write $gpio 0";exec($send, $output, $return_var );}
-      if ($switch==1){$send="gpio-g write $gpio 1";exec($send, $output, $return_var );} 
+     $send="gpio -g mode $gpio out";    exec($send, $output, $return_var );
+      if ($switch==0){$send="gpio -g write $gpio 0";exec($send, $output, $return_var );}
+      if ($switch==1){$send="gpio -g write $gpio 1";exec($send, $output, $return_var );} 
       if ($switch==2){ 
-      $send="gpio-g write $gpio 1";exec($send, $output, $return_var ); 
+      $send="gpio -g write $gpio 1";exec($send, $output, $return_var ); 
       sleep(3);
-      $send="gpio-g write $gpio 0";exec($send, $output, $return_var ); 
+      $send="gpio -g write $gpio 0";exec($send, $output, $return_var ); 
      }
     // $return_var returning 127 after post
     $header= false; $return_var = "Button = $button";
  }
 }
 
-
+// Send a header so the status can be read
 if ($header){
     header("HTTP/1.1 404 Not Found");
     header("Status: 404 Not Found");
@@ -133,11 +139,11 @@ $size= filesize($log);
 
 // Save the log
 $datum = date('[Y-m-d H:i:s]'); 
-$status = "$datum : Message:$talk From:$code $device status: $return_var Size:$size";
+$status = "$datum : Message:$talk From:$code $device status:$format $return_var Size:$size";
 print $status;
 $fileOUT = fopen($log, "a") ;flock( $fileOUT, LOCK_EX );fwrite ($fileOUT, "$status\n");flock( $fileOUT, LOCK_UN );fclose ($fileOUT);
 
-// save server info 
+// save server info gpio must be installed
 if(!file_exists($server))  { 
 $send="gpio -v >>$server";exec($send, $output, $return_var ); 
 $send="gpio readall >>$server";exec($send, $output, $return_var ); 
