@@ -6,6 +6,10 @@ Notification,Chime,Alarm,MusicPlayer,SpeechSynthesis,buton,Presence,Temp,Volts
 =====================================================================================
 Reads text on the pi or you can play any mp3 file on your pi through pi speakers.
 
+Requires other packages in this directory be installed on the pi under a php webserver.
+to take the commands.
+
+
         _        _            _            _                   _             _        
         /\ \     /\ \         /\ \         / /\                _\ \          /\_\      
        /  \ \    \ \ \        \_\ \       / /  \              /\__ \        / / /  _   
