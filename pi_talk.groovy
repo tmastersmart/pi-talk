@@ -18,6 +18,7 @@ Reads text on the pi or you can play any mp3 file on your pi through pi speakers
 / / /   /\__\/_/___\    /_/ /      / / /_       __\ \_\/_______/\__\// / /    \ \ \    
 \/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
                                                                                        
+v3.1  11/29/2022 Logging upgrades
 v3.0  05-04-2022 Added mains support flag
 v2.9  03-30-2022 bug fixed speak was not working if no vol sent
 v2.8  10-14-2021 After routine 5.1 you must now provide a VOL for speak
@@ -56,16 +57,16 @@ https://github.com/tmastersmart/pi-talk/tree/main
 https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 
 * =================================================  
-  (c) 2021 by WinnFreeNet.com all rights reserved
+  (c) 2021 / 2022 by WinnFreeNet.com all rights reserved
   permission to use on hubiat for free
 * =================================================
 */
 
 def clientVersion() {
-    TheVersion="3.0"
+    TheVersion="3.1"
  if (state.version != TheVersion){ 
      state.version = TheVersion
-     Refresh() 
+   
  }
 }
 
@@ -100,6 +101,11 @@ metadata {
 
                 
     preferences {
+        input name: "infoLogging",  type: "bool", title: "Enable info logging",  description: "Recomended low level" ,defaultValue: true, required: true
+	    input name: "debugLogging", type: "bool", title: "Enable debug logging", description: "MED level Debug" ,     defaultValue: false,required: true
+	    input name: "traceLogging", type: "bool", title: "Enable trace logging", description: "Insane HIGH level",    defaultValue: false,required: true
+
+        
         input("url", "text", title: "URL OF PI:", description: "http://0.0.0.0/talk.php",required: true)
         input("url2",  "text", title: "Presence URL", description: "http://0.0.0.0/",required: true)
         input("pollMinutes",  "text", title: "Polling Minutes", description: "Schedule to check",defaultValue: 10,required: true)
@@ -123,35 +129,51 @@ metadata {
     }              
 }
 
+def initialize() {
+    logging("Initialize", "warn")
+}
+
+
+def updated () {
+    loggingUpdate()
+    clientVersion()
+    logging("Cron updated ${pollMinutes}min", "info") 
+
+    state.tryPresence = 0
+    schedule("0 */${pollMinutes} * ? * *", refresh)
+    runIn(2, refresh)
+
+}
+
 def setAlarmIN(st) {
-    log.info "${device.displayName} PI sent Alarm ${st}"    
+    logging("PI sent Alarm ${st}", "info") 
     sendEvent(name: "alarmin", value: st, descriptionText: "Custom alarm from PI")    
    
 }
 
 
 def setModel(version) {
-    log.info "${device.displayName} Model is ${version}"    
+    logging("Model is ${version}", "info") 
     updateDataValue("model", version)
 }
 def setMemory(version) {
-    log.info "${device.displayName} Memory is ${version}"    
+    logging("Memory is ${version}", "info") 
     updateDataValue("Memory", version)
 }
 def setVolts(coreVolts) {
-//    log.info "${device.displayName} PI Core Volts ${coreVolts}v"
+    logging("PI Core Volts ${coreVolts}v", "debug")
     sendEvent(name: "volts", value: coreVolts, descriptionText: "Core Volts", unit: "v")    
    
 }
 
 def setTemperature(temp) {
-//    log.info "${device.displayName} PI Core Temp is ${temp}c"
+    logging("PI Core Temp is ${temp}c", "debug")
     sendEvent(name: "temperature", value: temp, descriptionText: "Core Temp", unit: "c")
     
 // This resets the pressence flags
    if (device.currentValue('presence') != "present") {
-	   sendEvent(name: "presence", value: "present") 
-	   log.info "${device}: presence set by temp report. Im Back. "
+	   sendEvent(name: "presence", value: "present")
+       logging("presence set by temp report. Im Back.", "warn")
        state.tryPresence = 0
   }
    
@@ -196,8 +218,8 @@ def push(button) {
     }
 
     if (state.gpioSwitch == ""){
-        sendEvent(name: "status", value: "Error", descriptionText: "Button${button} not supported", displayed: true)    
-        log.warn "${device} Error Button${button} not supported"
+        sendEvent(name: "status", value: "Error", descriptionText: "Button${button} not supported", displayed: true)
+        logging("Error Button${button} not supported", "warn")
     }
        
 }
@@ -213,22 +235,21 @@ def push(button) {
             "dev": "${device.deviceId}",
         ]
     ]
-	
-   log.info "${device} :Button ${button} Pushed GPIO ${state.gpio} State:${state.gpioState}"    
-   
+	logging("Button ${button} Pushed GPIO ${state.gpio} State:${state.gpioState}", "info")
+
 // improved post    
         try {
         httpPost(params) { resp ->
             if (resp.success) {
-               log.info "${device} :Received at pi ok"
+               logging("Received at pi ok", "info")
                sendEvent(name: "status", value: "ok", descriptionText: "${state.gpioSwitch}", displayed: true) 
                sendEvent(name: "pushed", value: "${button}", isStateChange: true, type: "digital")
             }
-            else {log.info "${device} : Received Status ${resp.status}"}
+            else {logging("Received Status ${resp.status}", "info")}
         }
     } catch (Exception e) {
-        sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true)        
-        log.warn "${device} Error: ${e.message}"
+        sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true) 
+        logging("Error: ${e.message}", "info")   
     // we dont send a event for switch if error 
     }
 }
@@ -238,28 +259,28 @@ def off(cmd){
 // We only play sounds no OFF is needed but hub will send it
   sendEvent(name: "siren", value: "off", descriptionText: "We were already off", displayed: true)
   sendEvent(name: "strobe", value: "off", descriptionText: "We were already off", displayed: true)
-  log.info "${device} :Ignoring OFF command" 
+  logging("Ignoring OFF command", "warn") 
   sendEvent(name: "status", value: "ok", descriptionText: "im ok", displayed: true)
   sendEvent(name: "alarmin", value: "OFF", descriptionText: "forcing off")   
 }
 
 def siren(cmd){
   playMP3(scode)
-  log.info "${device} :siren"
+  logging("siren ON", "warn")   
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off") 
 }
 def strobe(cmd){
   playMP3(scode)
-  log.info "${device} :strobe"
+  logging("STROBE ON", "info")   
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off")  
 }
 def both(cmd){
   playMP3(scode)
-  log.info "${device} :siren / strobe"
+  logging("siren/strobe ON", "warn")   
   sendEvent(name: "siren", value: "on")  
   sendEvent(name: "siren", value: "off")
   sendEvent(name: "strobe", value: "off")   
@@ -268,7 +289,7 @@ def both(cmd){
 
 // PlaySound is the chime - numbers
 def playSound(soundnumber){
-   log.info "${device} :Chime  ${soundnumber}" 
+   logging("Play Chime  ${soundnumber}", "info")  
    sendEvent(name: "chime", value: "${soundnumber}") 
     if (soundnumber== 1){ soundnumber = chime1}
     if (soundnumber== 2){ soundnumber = chime2}
@@ -285,23 +306,21 @@ def playMP3(soundname){
             uri: "${url}",
         query: ["play": "${soundname}","code": "${code}","dev": "${device.deviceId}",]
     ]
-	
-   log.info "${device} :Playing File: ${url}?play=${soundname}"    
+   logging("Play File: ${url}?play=${soundname}", "info") 
    sendEvent(name: "received", value: "${soundname}")
 
 // improved post    
         try {
         httpPost(params) { resp ->
             if (resp.success) {
-               log.info "${device} :Received at pi ok"
+               logging("Received at pi ok", "info")  
                sendEvent(name: "status", value: "ok", descriptionText: "Playing : ${soundname}", displayed: true)
             }
-            else {log.info "${device} : Received Status ${resp.status}"}
+            else {logging("Received Status ${resp.status}", "info")}
         }
     } catch (Exception e) {
         sendEvent(name: "status", value: "Error", descriptionText: "${e.message}", displayed: true)       
-        log.warn "${device} Error: ${e.message}"
- 
+        logging("Error: ${e.message}", "warn")
     }
 }
 
@@ -310,7 +329,7 @@ def playMP3(soundname){
 // Hub needs these to be trapped or error thrown.
 def customError (st){
   sendEvent(name: "received", value: "${st}") 
-  log.warn "${device} :${st} Not supported yet"
+  logging("${st} Not supported yet", "warn")  
   sendEvent(name: "status", value: "error", descriptionText: "Unknown cmd", displayed: true) 
 
 }
@@ -359,7 +378,8 @@ def speak(message, volume=-1, voice="") {
 }
 
 
-
+        
+  
 
 def deviceNotification(message) {
     
@@ -367,8 +387,8 @@ def deviceNotification(message) {
         uri: "${url}",
         query: ["talk": "${message}","code": "${code}","voice": "${voice}","lang": "${lang}","dev": "${device.deviceId}",]
     ]
- 
-   log.info "${device} :Sending Message: ${url}?talk=${message}"    
+   logging("Sending Message: ${url}?talk=${message}", "info") 
+
    sendEvent(name: "received", value: "${message}")
     
 // improved post    
@@ -387,14 +407,7 @@ def deviceNotification(message) {
 }
 
 
-def updated () {
-	log.debug "${device}: Cron updated ${pollMinutes}min"
-    state.tryPresence = 0
-    schedule("0 */${pollMinutes} * ? * *", refresh)
-    runIn(2, refresh)
-//    sendEvent(name: "presence", value: "present")   
-//    log.info "${device}: Present AT DEFAULT" 
-}
+
 
 
 
@@ -415,36 +428,75 @@ def httpGetPresence(response, data) {
 	}
     
     def st = response.getStatus()
+    code="error"
+    if(st == 200){code="ok"}
+    if(st == 400){code="Bad Request"}
+	if(st == 401){code="Unauthorized"}
+	if(st == 404){code="File Not Found"}
+    if(st == 500){code="Server Error"}
+    if(st == 503){code="Service Unavailable"}
   
 	if (st == 200) {
 		state.tryPresence = 0
-        log.info "${device}: Presence check status =${st} (OK)"
+        logging("Presence check [${st} ${code}] Tries:${state.tryCount}", "info") 
+        
 		
 		if (device.currentValue('presence') != "present") {
            sendEvent(name: "presence", value: "present")
-           log.info "${device}: is present" 
+           logging("is present", "info") 
            sendEvent(name: "status", value: "ok", descriptionText: "Im Back", displayed: true)  
  
          }
         
         if (device.currentValue('powerSource') != "mains") {
            sendEvent(name: "powerSource", value: "mains", isStateChange: true)
-           log.info "${device}: Power: Mains" 
+           logging("Power: Mains", "info")  
+
         }
    }// end 200
     
     else { 
-        log.info "${device}: Presence check status =${st} Failed:${state.tryPresence} Times."    
-    
+        logging("Presence check [${st} ${code}] Tries:${state.tryCount}", "warn") 
+   
         if (state.tryPresence > 2){
         if (device.currentValue('presence') == "present") {
          sendEvent(name: "presence", value: "not present")
-         log.warn "${device}: not present"    
+         logging("not present", "warn")    
          sendEvent(name: "powerSource", value: "battery", isStateChange: true)
-         log.info "${device}: Power: OFF"    
+         logging("Power: OFF", "info")     
          sendEvent(name: "status", value: "error", descriptionText: "OFFLINE", displayed: true)   
         } 
     }
    }// end else
 }// end get
+// Logging block  v4
 
+void loggingUpdate() {
+    logging("Logging Info:[${infoLogging}] Debug:[${debugLogging}] Trace:[${traceLogging}]", "infoBypass")
+    // Only do this when its needed
+    if (debugLogging){
+        logging("Debug log:off in 3000s", "warn")
+        runIn(3000,debugLogOff)
+    }
+    if (traceLogging){
+        logging("Trace log: off in 1800s", "warn")
+        runIn(1800,traceLogOff)
+    }
+}
+
+void traceLogOff(){
+	device.updateSetting("traceLogging",[value:"false",type:"bool"])
+	log.trace "${device} : Trace Logging : Automatically Disabled"
+}
+void debugLogOff(){
+	device.updateSetting("debugLogging",[value:"false",type:"bool"])
+	log.debug "${device} : Debug Logging : Automatically Disabled"
+}
+private logging(String message, String level) {
+    if (level == "infoBypass"){log.info  "${device} : $message"}
+	if (level == "error"){     log.error "${device} : $message"}
+	if (level == "warn") {     log.warn  "${device} : $message"}
+	if (level == "trace" && traceLogging) {log.trace "${device} : $message"}
+	if (level == "debug" && debugLogging) {log.debug "${device} : $message"}
+    if (level == "info"  && infoLogging)  {log.info  "${device} : $message"}
+}
