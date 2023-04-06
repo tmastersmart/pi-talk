@@ -127,18 +127,27 @@ Log rotation has permission problems so I wrote my own log lotation script
 Add Chron for (its very easy on webmin)
 
 Add chron to start talk.sh at bootup ( recomend creating a service instead of chron)
+
 Add Chron to for temp.php to run every say 15 mins
+
 Add Chron for temp-chart.sh to run at the same time as above but 1 min later
+
 Add Chron for temp-rotate.php at mignight
 
 
 php /var/www/html/temp.php > /dev/null 2>&1    (start at boot time)
+
 bash /home/pi/talk.sh > /dev/null 2>&1         (every 10 or 15 mins)
+
 bash /home/pi/temp-chart.php > /dev/null 2>&1  (run 1 min after the above runs)
-php /var/www/html/temp-rotate.php > /dev/null 2>&1 (run at midnight)  
+
+php /var/www/html/temp-rotate.php > /dev/null 2>&1 (run at midnight) 
+
 
 Temp chart will create a file at /var/html/www/images/temp.png
+
 you can load this from http://127.0.0.1/images/temp.png
+
 I have this on my hub desktop. 
 
 You may modify espeak command the docs are here
