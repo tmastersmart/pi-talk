@@ -1,6 +1,6 @@
 All Star TTS from hubitat.
 
-Adds the allstar node as a speach device in hubitat.  Will repeat anything sent to is as voice.
+Adds the allstar node as a speech device in hubitat.  Will repeat anything sent to is as voice.
 Needs tts_audio.sh set up and working follow instructions at.
 https://www.hamvoip.org/howto/tts-how-to.pdf
 
@@ -16,6 +16,7 @@ Copy the php script and save
 .sh files installed in /etc/asterisk/local directory
 nano /etc/asterisk/local/talk-loop.sh
 copy the .sh file ans save
+Remember to add your node number where it has 1195
 
 talk-loop.sh is started at boot time by adding it to 
 /etc/rc.local
