@@ -1,4 +1,10 @@
 #!/bin/bash
+//  ------------------------------------------------------------
+//  (c) 2023 by lagmrs.com all rights recerved
+//  Permission granted to install and use wuith hubitat for free   
+//  https://github.com/tmastersmart/pi-talk/tree/main/allstar
+//  ------------------------------------------------------------
+// Remember to change your node number
 
 MSG1=/tmp/talk.txt
 MSG2=/tmp/talk.ul
@@ -16,7 +22,7 @@ if [[  -f $MSG1 ]] ; then
 # echo "[$DATE] $talk"
  tts_audio.sh $MSG1 
  rm $MSG1
- asterisk -rx 'rpt localplay 2955 /tmp/talk'
+ asterisk -rx 'rpt localplay 1995 /tmp/talk'
 
  
 fi
