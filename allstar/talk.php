@@ -12,9 +12,12 @@
 //  Accepts text messages from the hubitat hub or anything that wants to post.
 //
 //  get or post
-//  talk.php?talk=your message&code=GMRS
+// talk.php?talk=your message&code=GMRS
+// talk.php?temp=80&code=GMRS   stores the temp in a temp text file for later processing
+// talk.php?weather=string&code=GMRS   stores a weather string text file for later processing
 //
-$Version"1.2";
+
+$Version= "1.2";
 //session_start([ 'name' => "talk" ]);
 
 $password = "GMRS"; // If open to the internet you must set a pwd 
