@@ -1,14 +1,22 @@
 #!/bin/bash
-//  ------------------------------------------------------------
-//  (c) 2023 by lagmrs.com all rights recerved
-//  Permission granted to install and use wuith hubitat for free   
-//  https://github.com/tmastersmart/pi-talk/tree/main/allstar
-//  ------------------------------------------------------------
-// Remember to change your node number
-
+# (c)2023 by winnfreenet.com
+# This script reads incomming text messages from the web port.
+# you must also install talk.php
+#
+# Allows hubitat to send tts messages to the node like it was alexa
+# Will also work with anything that wants to send a message to the web port.
+#
+# Watches for the talk.txt file in a loop and converts it.
+# tts_audio.sh must already be setup with you key.
+# 
+# this file goes in /etc/asterisk/local/talk-loop.sh
+# and must start when system boots
+#
+# v1.0 
+# 
 MSG1=/tmp/talk.txt
 MSG2=/tmp/talk.ul
- LOG=/tmp/talk.log
+ LOG=/tmp/talk1.log
  
 while true
 do
@@ -22,7 +30,7 @@ if [[  -f $MSG1 ]] ; then
 # echo "[$DATE] $talk"
  tts_audio.sh $MSG1 
  rm $MSG1
- asterisk -rx 'rpt localplay 1995 /tmp/talk'
+ asterisk -rx 'rpt localplay 2955 /tmp/talk'
 
  
 fi
