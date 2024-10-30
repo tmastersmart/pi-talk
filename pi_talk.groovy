@@ -22,6 +22,7 @@ to take the commands.
 / / /   /\__\/_/___\    /_/ /      / / /_       __\ \_\/_______/\__\// / /    \ \ \    
 \/_/    \/_________/    \_\/       \_\___\     /____/_/\_______\/    \/_/      \_\_\   
                                                                                        
+v3.2  04/15/2023 Bug fix in error counter in log
 v3.1  11/29/2022 Logging upgrades
 v3.0  05-04-2022 Added mains support flag
 v2.9  03-30-2022 bug fixed speak was not working if no vol sent
@@ -67,7 +68,7 @@ https://raw.githubusercontent.com/tmastersmart/pi-talk/main/pi_talk.groovy
 */
 
 def clientVersion() {
-    TheVersion="3.1"
+    TheVersion="3.2"
  if (state.version != TheVersion){ 
      state.version = TheVersion
    
@@ -115,15 +116,15 @@ metadata {
         input("pollMinutes",  "text", title: "Polling Minutes", description: "Schedule to check",defaultValue: 10,required: true)
 
         input("code", "text", title: "Hubs name", description: "to identify the hub in the pi log",required: true)
-        input("voice", "text", title: "Voice code", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.")
-        input("lang", "text", title: "Language", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)")
+        input("voice", "text", title: "Voice code select one", description: "+m1 +m2 +m3 +m4 +m5 +m6 +m7 for male voices and +f1 +f2 +f3 +f4 for female or +croak and +whisper.",defaultValue: "+f4",required: true)
+        input("lang", "text", title: "Language pick one", description: "-ven-us USA -ves spanish -vde german(see 'espeak --voices' on pi)",defaultValue: "-ven-us",required: true)
 
         input("chime1", "text", title: "Chime 1", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "1",required: true)
         input("chime2", "text", title: "Chime 2", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "2",required: true)
         input("chime3", "text", title: "Chime 3", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "3",required: true)
         input("chime4", "text", title: "Chime 4", description: "The name of the mp3 or wav file to play [dont enter ext .mp3]",defaultValue: "4",required: true)       
         
-        input("scode", "text", title: "siren", description: "Name of the Siren file to play [dont enter.mp3]",required: true)
+        input("scode", "text", title: "siren", description: "Name of the Siren file to play [dont enter.mp3]",defaultValue: "1",required: true)
 
 
         input("gpio1", "text", title: "1st GPIO", description: "Button 1 on Button 2 OFF. number of GPIO (0 disable)",defaultValue: "0",required: true)
@@ -442,7 +443,7 @@ def httpGetPresence(response, data) {
   
 	if (st == 200) {
 		state.tryPresence = 0
-        logging("Presence check [${st} ${code}] Tries:${state.tryCount}", "info") 
+        logging("Presence check [${st} ${code}] Tries:${state.tryPresence}", "info") 
         
 		
 		if (device.currentValue('presence') != "present") {
@@ -460,7 +461,7 @@ def httpGetPresence(response, data) {
    }// end 200
     
     else { 
-        logging("Presence check [${st} ${code}] Tries:${state.tryCount}", "warn") 
+        logging("Presence check [${st} ${code}] Tries:${state.tryPresence}", "warn") 
    
         if (state.tryPresence > 2){
         if (device.currentValue('presence') == "present") {
@@ -468,7 +469,7 @@ def httpGetPresence(response, data) {
          logging("not present", "warn")    
          sendEvent(name: "powerSource", value: "battery", isStateChange: true)
          logging("Power: OFF", "info")     
-         sendEvent(name: "status", value: "error", descriptionText: "OFFLINE", displayed: true)   
+         sendEvent(name: "status", value: "OFFLINE", descriptionText: "${st} ${code}", displayed: true)   
         } 
     }
    }// end else
