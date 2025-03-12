@@ -6,7 +6,7 @@ Turns Pi inst music player and speach device controled by hubitat
 capability Notification,Chime,Alarm,button,switch GPIO
 Reverse connections for temp volts model#
 ----------------------------------------------------------------------------------------
-(c) 2021 by tmastersmart winnfreenet.com
+(c) 2021/2025 by tmastersmart winnfreenet.com
 Licensed for use on hubitat
 
 I created this set of scripts because I could not find one online that would allow to control
@@ -181,3 +181,6 @@ So far I have no ideal if anyone else is even intrested. Im basicaly building th
 myself right now. Once this is working if no one is intrested updates will only be internal.
 
 http://www.winnfreenet.com/wp/2021/09/pi-talk-hubitat-to-rasbery-pi-talking-script/
+
+update 2025 everything is still working so no updates but i plan to remove some of the things i never used like the weather
+ands build it into my gmrs node image.
