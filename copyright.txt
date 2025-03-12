@@ -5,7 +5,7 @@
  |     \   |  | \/\  ___/\  ___/\     /  |  \  ___/\     /  \        /  / __ \|  | \/\  ___/
  \___  /   |__|    \___  >\___  >\___/   |__|\___  >\/\_/    \__/\  /  (____  /__|    \___  >
  ============================================================================================
- copyright 2021 Winnfreenet.com all rights reserved (permission to use on with Hubitat for free)
+ copyright 2021/2025 Winnfreenet.com all rights reserved (permission to use on with Hubitat for free)
  
  FreeViewWare (tm) 1997 I started writting in basic on the c64 creating BBS software and terminal software
  Now days shareware doesnt work and Open Source is just like PD. So this software is copyrighted and
